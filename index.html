@@ -72,6 +72,9 @@
             });
             const [newExercise, setNewExercise] = useState('');
             const [newRoute, setNewRoute] = useState({ color: '', number: '', attempts: '', note: '' });
+            const [editingSessionId, setEditingSessionId] = useState(null);
+            const [editSession, setEditSession] = useState(null);
+            const [updating, setUpdating] = useState(false);
 
             const colors = ['Gul', 'Orange', 'Blå', 'Sort', 'Rød', 'Grøn', 'Lilla', 'Hvid', 'Pink'];
 
@@ -149,6 +152,114 @@
                     }
                     setSaving(false);
                 }
+            };
+
+            const startEditSession = (session) => {
+                if (!session || !session.id) return;
+                setEditingSessionId(session.id);
+                setEditSession({
+                    date: (session.date || new Date().toISOString().split('T')[0]).toString().slice(0, 10),
+                    location: session.location || '',
+                    duration: session.duration || '',
+                    exercises: session.exercises || [],
+                    routes: session.routes || []
+                });
+            };
+
+            const cancelEditSession = () => {
+                setEditingSessionId(null);
+                setEditSession(null);
+                setUpdating(false);
+            };
+
+            const deleteSession = async () => {
+                if (!editingSessionId) return;
+                const confirmDelete = window.confirm('Er du sikker på, at du vil slette hele sessionen? Dette kan ikke fortrydes.');
+                if (!confirmDelete) return;
+                setUpdating(true);
+                try {
+                    const { error } = await supabase
+                        .from('sessions')
+                        .delete()
+                        .eq('id', editingSessionId);
+                    if (error) {
+                        console.error('Error deleting session:', error);
+                        alert('Kunne ikke slette session.');
+                    } else {
+                        setSessions(sessions.filter(s => s.id !== editingSessionId));
+                        cancelEditSession();
+                    }
+                } catch (e) {
+                    console.error('Error deleting session:', e);
+                    alert('Kunne ikke slette session.');
+                }
+                setUpdating(false);
+            };
+
+            const updateSession = async () => {
+                if (!editingSessionId || !editSession) return;
+                if (!editSession.location || !editSession.duration) return;
+                setUpdating(true);
+                try {
+                    const { data: updated, error } = await supabase
+                        .from('sessions')
+                        .update({
+                            date: editSession.date,
+                            location: editSession.location,
+                            duration: editSession.duration,
+                            exercises: editSession.exercises,
+                            routes: editSession.routes
+                        })
+                        .eq('id', editingSessionId)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        console.error('Error updating session:', error);
+                        alert('Kunne ikke opdatere session.');
+                    } else {
+                        setSessions(sessions.map(s => (s.id === editingSessionId ? { ...s, ...updated } : s)));
+                        cancelEditSession();
+                    }
+                } catch (e) {
+                    console.error('Error updating session:', e);
+                    alert('Kunne ikke opdatere session.');
+                }
+                setUpdating(false);
+            };
+
+            const addEditExercise = () => {
+                if (newExercise.trim()) {
+                    setEditSession({
+                        ...editSession,
+                        exercises: [...editSession.exercises, newExercise]
+                    });
+                    setNewExercise('');
+                }
+            };
+
+            const removeEditExercise = (index) => {
+                setEditSession({
+                    ...editSession,
+                    exercises: editSession.exercises.filter((_, i) => i !== index)
+                });
+            };
+
+            const addEditRoute = () => {
+                if (newRoute.color) {
+                    setEditSession({
+                        ...editSession,
+                        routes: [...editSession.routes, { ...newRoute }]
+                    });
+                    setNewRoute({ color: '', number: '', attempts: '', note: '' });
+                }
+            };
+
+            const removeEditRoute = (index) => {
+                setEditSession({
+                    ...editSession,
+                    routes: editSession.routes.filter((_, i) => i !== index)
+                });
             };
 
             const getWeekStats = () => {
@@ -241,7 +352,7 @@
 
                                 {Object.keys(stats.colorCounts).length > 0 ? (
                                     <div className="space-y-2">
-                                        <h3 className="text-sm text-slate-400 mb-3">Farver (sværest først)</h3>
+                                        <h3 className="text-sm text-slate-400 mb-3">Ruter (sværest først)</h3>
                                         {Object.entries(stats.colorCounts).map(([color, count]) => (
                                             <div key={color} className="flex items-center justify-between bg-slate-700/30 rounded-lg p-3">
                                                 <span className="font-semibold text-lg">{color}</span>
@@ -460,21 +571,185 @@
                             ) : (
                                 sessions.map((session, i) => (
                                     <div key={session.id || i} className="bg-slate-800/50 backdrop-blur rounded-2xl p-5 border border-slate-700">
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div>
-                                                <h3 className="text-lg font-semibold">
-                                                    {new Date(session.date).toLocaleDateString('da-DK', {
-                                                        day: 'numeric',
-                                                        month: 'long',
-                                                        year: 'numeric'
-                                                    })}
-                                                </h3>
-                                                <p className="text-slate-400 text-sm">{session.location}</p>
+                                        {editingSessionId === session.id ? (
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm text-slate-400 mb-2">Dato</label>
+                                                    <input
+                                                        type="date"
+                                                        value={editSession?.date || ''}
+                                                        onChange={(e) => setEditSession({ ...editSession, date: e.target.value })}
+                                                        className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm text-slate-400 mb-2">Lokation</label>
+                                                    <input
+                                                        type="text"
+                                                        value={editSession?.location || ''}
+                                                        onChange={(e) => setEditSession({ ...editSession, location: e.target.value })}
+                                                        className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm text-slate-400 mb-2">Varighed</label>
+                                                    <input
+                                                        type="text"
+                                                        value={editSession?.duration || ''}
+                                                        onChange={(e) => setEditSession({ ...editSession, duration: e.target.value })}
+                                                        className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-sm text-slate-400 mb-2">Øvelser</label>
+                                                    <div className="flex gap-2 mb-2">
+                                                        <input
+                                                            type="text"
+                                                            value={newExercise}
+                                                            onChange={(e) => setNewExercise(e.target.value)}
+                                                            onKeyPress={(e) => e.key === 'Enter' && addEditExercise()}
+                                                            placeholder="f.eks. 10 pull ups"
+                                                            className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                        />
+                                                        <button
+                                                            onClick={addEditExercise}
+                                                            className="bg-blue-500 hover:bg-blue-600 px-4 rounded-lg"
+                                                        >
+                                                            <Icon name="Plus" size={20} />
+                                                        </button>
+                                                    </div>
+                                                    {editSession?.exercises?.map((ex, i) => (
+                                                        <div key={i} className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2 mb-1 text-sm">
+                                                            <span className="flex-1">{ex}</span>
+                                                            <button
+                                                                onClick={() => removeEditExercise(i)}
+                                                                className="text-red-400 hover:text-red-300"
+                                                            >
+                                                                <Icon name="X" size={16} />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-sm text-slate-400 mb-2">Ruter</label>
+                                                    <div className="space-y-2 mb-2">
+                                                        <select
+                                                            value={newRoute.color}
+                                                            onChange={(e) => setNewRoute({...newRoute, color: e.target.value})}
+                                                            className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                        >
+                                                            <option value="">Vælg farve</option>
+                                                            {colors.map(c => <option key={c} value={c}>{c}</option>)}
+                                                        </select>
+                                                        
+                                                        <div className="flex gap-2">
+                                                            <input
+                                                                type="text"
+                                                                value={newRoute.number}
+                                                                onChange={(e) => setNewRoute({...newRoute, number: e.target.value})}
+                                                                placeholder="Nummer (valgfrit)"
+                                                                className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                            />
+                                                            <input
+                                                                type="text"
+                                                                value={newRoute.attempts}
+                                                                onChange={(e) => setNewRoute({...newRoute, attempts: e.target.value})}
+                                                                placeholder="Forsøg"
+                                                                className="w-24 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                            />
+                                                        </div>
+                                                        
+                                                        <input
+                                                            type="text"
+                                                            value={newRoute.note}
+                                                            onChange={(e) => setNewRoute({...newRoute, note: e.target.value})}
+                                                            placeholder="Note (f.eks. 'Fejl - ikke nok fingerstyrke')"
+                                                            className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                        />
+                                                        
+                                                        <button
+                                                            onClick={addEditRoute}
+                                                            className="w-full bg-blue-500 hover:bg-blue-600 py-2 rounded-lg flex items-center justify-center gap-2"
+                                                        >
+                                                            <Icon name="Plus" size={20} />
+                                                            Tilføj rute
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-1">
+                                                        {editSession?.routes?.map((route, i) => (
+                                                            <div key={i} className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2 text-sm">
+                                                                <div className="flex-1">
+                                                                    <span className="font-semibold">{route.color}</span>
+                                                                    {route.number && <span> {route.number}</span>}
+                                                                    {route.attempts && <span className="text-slate-400"> ({route.attempts})</span>}
+                                                                    {route.note && <span className="text-orange-400"> - {route.note}</span>}
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => removeEditRoute(i)}
+                                                                    className="text-red-400 hover:text-red-300"
+                                                                >
+                                                                    <Icon name="X" size={16} />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex gap-2 pt-2">
+                                                    <button
+                                                        onClick={updateSession}
+                                                        disabled={updating}
+                                                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
+                                                    >
+                                                        Gem ændringer
+                                                    </button>
+                                                    <button
+                                                        onClick={cancelEditSession}
+                                                        disabled={updating}
+                                                        className="flex-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
+                                                    >
+                                                        Annuller
+                                                    </button>
+                                                    <button
+                                                        onClick={deleteSession}
+                                                        disabled={updating}
+                                                        className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
+                                                    >
+                                                        Slet hele session
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-semibold">
-                                                {session.duration}
-                                            </span>
-                                        </div>
+                                        ) : (
+                                            <div>
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <h3 className="text-lg font-semibold">
+                                                            {new Date(session.date).toLocaleDateString('da-DK', {
+                                                                day: 'numeric',
+                                                                month: 'long',
+                                                                year: 'numeric'
+                                                            })}
+                                                        </h3>
+                                                        <p className="text-slate-400 text-sm">{session.location}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-semibold">
+                                                            {session.duration}
+                                                        </span>
+                                                        {session.id && (
+                                                            <button
+                                                                onClick={() => startEditSession(session)}
+                                                                className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200"
+                                                                title="Rediger"
+                                                            >
+                                                                <Icon name="Edit" size={18} />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
 
                                         {session.exercises && session.exercises.length > 0 && (
                                             <div className="mb-3">
@@ -502,6 +777,8 @@
                                                         </div>
                                                     ))}
                                                 </div>
+                                            </div>
+                                        )}
                                             </div>
                                         )}
                                     </div>
