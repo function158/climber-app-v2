@@ -63,6 +63,7 @@
             const [showNewSession, setShowNewSession] = useState(false);
             const [loading, setLoading] = useState(true);
             const [saving, setSaving] = useState(false);
+            const [timePeriod, setTimePeriod] = useState('week'); // 'week', 'month', 'year'
             const [currentSession, setCurrentSession] = useState({
                 date: new Date().toISOString().split('T')[0],
                 location: '',
@@ -262,28 +263,51 @@
                 });
             };
 
-            const getWeekStats = () => {
-                const oneWeekAgo = new Date();
-                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            const getStats = () => {
+                const now = new Date();
+                let startDate = new Date();
                 
-                const weekSessions = sessions.filter(s => {
+                // Set start date based on time period
+                if (timePeriod === 'week') {
+                    startDate.setDate(now.getDate() - 7);
+                } else if (timePeriod === 'month') {
+                    startDate.setMonth(now.getMonth() - 1);
+                } else if (timePeriod === 'year') {
+                    startDate.setFullYear(now.getFullYear() - 1);
+                }
+                
+                const filteredSessions = sessions.filter(s => {
                     const sessionDate = new Date(s.date);
-                    return sessionDate >= oneWeekAgo;
+                    return sessionDate >= startDate;
                 });
 
-                const totalMinutes = weekSessions.reduce((acc, s) => {
+                const totalMinutes = filteredSessions.reduce((acc, s) => {
                     return acc + parseDuration(s.duration);
                 }, 0);
 
                 let totalRoutes = 0;
                 const colorCounts = {};
+                const dailyRoutes = {};
+                const dailyColors = {};
                 
-                weekSessions.forEach(s => {
+                filteredSessions.forEach(s => {
+                    const sessionDate = new Date(s.date).toISOString().split('T')[0];
+                    if (!dailyRoutes[sessionDate]) {
+                        dailyRoutes[sessionDate] = 0;
+                        dailyColors[sessionDate] = {};
+                    }
+                    
                     if (s.routes && Array.isArray(s.routes)) {
                         s.routes.forEach(r => {
-                            totalRoutes++;
-                            if (r.color) {
-                                colorCounts[r.color] = (colorCounts[r.color] || 0) + 1;
+                            // Only count routes that don't have failure notes
+                            const isCompleted = !r.note || !r.note.toLowerCase().includes('fejl');
+                            if (isCompleted) {
+                                totalRoutes++;
+                                dailyRoutes[sessionDate]++;
+                                if (r.color) {
+                                    colorCounts[r.color] = (colorCounts[r.color] || 0) + 1;
+                                    dailyColors[sessionDate][r.color] = (dailyColors[sessionDate][r.color] || 0) + 1;
+                                }
                             }
                         });
                     }
@@ -300,11 +324,13 @@
                     totalHours: Math.floor(totalMinutes / 60),
                     totalMinutes: totalMinutes % 60,
                     totalRoutes,
-                    colorCounts: Object.fromEntries(sortedColors)
+                    colorCounts: Object.fromEntries(sortedColors),
+                    dailyRoutes,
+                    dailyColors
                 };
             };
 
-            const stats = getWeekStats();
+            const stats = getStats();
 
             if (loading) {
                 return (
@@ -323,7 +349,44 @@
                                 <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
                                     Bouldering Tracker
                                 </h1>
-                                <p className="text-slate-400">Denne uge</p>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-slate-400">
+                                        {timePeriod === 'week' ? 'Denne uge' : 
+                                         timePeriod === 'month' ? 'Sidste måned' : 'Sidste år'}
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setTimePeriod('week')}
+                                            className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                                                timePeriod === 'week' 
+                                                    ? 'bg-blue-500 text-white' 
+                                                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                            }`}
+                                        >
+                                            1 uge
+                                        </button>
+                                        <button
+                                            onClick={() => setTimePeriod('month')}
+                                            className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                                                timePeriod === 'month' 
+                                                    ? 'bg-blue-500 text-white' 
+                                                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                            }`}
+                                        >
+                                            1 måned
+                                        </button>
+                                        <button
+                                            onClick={() => setTimePeriod('year')}
+                                            className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                                                timePeriod === 'year' 
+                                                    ? 'bg-blue-500 text-white' 
+                                                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                            }`}
+                                        >
+                                            1 år
+                                        </button>
+                                    </div>
+                                </div>
                             </header>
 
                             <div className="bg-slate-800/50 backdrop-blur rounded-2xl p-6 mb-6 border border-slate-700">
@@ -364,10 +427,13 @@
                                     </div>
                                 ) : (
                                     <div className="text-center text-slate-400 py-8">
-                                        Ingen boulders denne uge endnu! 💪
+                                        {timePeriod === 'week' ? 'Ingen boulders denne uge endnu! 💪' :
+                                         timePeriod === 'month' ? 'Ingen boulders denne måned endnu! 💪' :
+                                         'Ingen boulders dette år endnu! 💪'}
                                     </div>
                                 )}
                             </div>
+
 
                             <button
                                 onClick={() => {
