@@ -593,7 +593,7 @@
                                                 <div className="mb-3">
                                                     <button
                                                         onClick={() => addExerciseWithReps(selectedExercise, exerciseReps)}
-                                                        className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
+                                                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
                                                     >
                                                         <Icon name="Plus" size={24} />
                                                         Tilføj {selectedExercise}: {exerciseReps} reps
@@ -648,7 +648,7 @@
                                                     className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                 />
                                                 <input
-                                                    type="text"
+                                                    type="number"
                                                     value={newRoute.attempts}
                                                     onChange={(e) => setNewRoute({...newRoute, attempts: e.target.value})}
                                                     placeholder="Forsøg"
@@ -664,13 +664,15 @@
                                                 className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                             />
                                             
-                                            <button
-                                                onClick={addRoute}
-                                                className="w-full bg-blue-500 hover:bg-blue-600 py-2 rounded-lg flex items-center justify-center gap-2"
-                                            >
-                                                <Icon name="Plus" size={20} />
-                                                Tilføj rute
-                                            </button>
+                                            {newRoute.color && (
+                                                <button
+                                                    onClick={addRoute}
+                                                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
+                                                >
+                                                    <Icon name="Plus" size={24} />
+                                                    Tilføj rute
+                                                </button>
+                                            )}
                                         </div>
                                         
                                         <div className="space-y-1">
@@ -778,7 +780,7 @@
                                                             <div className="mb-3">
                                                                 <button
                                                                     onClick={() => addEditExerciseWithReps(selectedExercise, exerciseReps)}
-                                                                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
+                                                                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
                                                                 >
                                                                     <Icon name="Plus" size={24} />
                                                                     Tilføj {selectedExercise}: {exerciseReps} reps
@@ -839,7 +841,7 @@
                                                                 className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                             />
                                                             <input
-                                                                type="text"
+                                                                type="number"
                                                                 value={newRoute.attempts}
                                                                 onChange={(e) => setNewRoute({...newRoute, attempts: e.target.value})}
                                                                 placeholder="Forsøg"
@@ -855,13 +857,15 @@
                                                             className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                         />
                                                         
-                                                        <button
-                                                            onClick={addEditRoute}
-                                                            className="w-full bg-blue-500 hover:bg-blue-600 py-2 rounded-lg flex items-center justify-center gap-2"
-                                                        >
-                                                            <Icon name="Plus" size={20} />
-                                                            Tilføj rute
-                                                        </button>
+                                                        {newRoute.color && (
+                                                            <button
+                                                                onClick={addEditRoute}
+                                                                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
+                                                            >
+                                                                <Icon name="Plus" size={24} />
+                                                                Tilføj rute
+                                                            </button>
+                                                        )}
                                                     </div>
                                                     
                                                     <div className="space-y-1">
