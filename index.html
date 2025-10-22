@@ -57,6 +57,55 @@
         // Color difficulty order (hardest first)
         const colorOrder = ['Sort', 'Rød', 'Lilla', 'Blå', 'Grøn', 'Orange', 'Gul', 'Hvid', 'Pink'];
 
+        // Accordion med smooth height animation (bedste praksis)
+        function Accordion({ open, children }) {
+            const ref = React.useRef(null);
+            const [height, setHeight] = React.useState('0px');
+            const [rendered, setRendered] = React.useState(open);
+            React.useEffect(() => {
+                if (open) setRendered(true);
+            }, [open]);
+            React.useEffect(() => {
+                const el = ref.current;
+                if (!el) return;
+
+                if (open) {
+                    el.style.height = '0px';
+                    requestAnimationFrame(() => {
+                        el.style.transition = 'height 0.35s cubic-bezier(.4,0,.2,1)';
+                        el.style.height = el.scrollHeight + 'px';
+                    });
+                    // Efter transition, sæt til auto for layout stability
+                    const handler = () => {
+                        el.style.height = 'auto';
+                        el.removeEventListener('transitionend', handler);
+                    };
+                    el.addEventListener('transitionend', handler);
+                } else {
+                    // hvis åben, sæt height til scrollHeight FØR vi sætter til 0, så browser animerer
+                    if (el.style.height === 'auto') {
+                        el.style.height = el.scrollHeight + 'px';
+                        // force reflow for transition
+                        void el.offsetHeight;
+                    }
+                    el.style.transition = 'height 0.35s cubic-bezier(.4,0,.2,1)';
+                    el.style.height = '0px';
+                    // Unrender children når transition er slut
+                    const handler = () => {
+                        setRendered(false);
+                        el.removeEventListener('transitionend', handler);
+                    };
+                    el.addEventListener('transitionend', handler);
+                }
+            }, [open]);
+
+            return (
+                <div ref={ref} style={{overflow:'hidden',height:open?'auto':'0px'}}>
+                    {rendered && <div>{children}</div>}
+                </div>
+            );
+        }
+
         const BoulderingTracker = () => {
             const [currentPage, setCurrentPage] = useState('home');
             const [sessions, setSessions] = useState([]);
@@ -78,6 +127,16 @@
             const [editingSessionId, setEditingSessionId] = useState(null);
             const [editSession, setEditSession] = useState(null);
             const [updating, setUpdating] = useState(false);
+
+            // Brug state til at holde styr på åbne sessions
+            const [openSessionIds, setOpenSessionIds] = useState([]);
+
+            const toggleSessionOpen = (id) => {
+                setOpenSessionIds(ids => ids.includes(id)
+                    ? ids.filter(x => x !== id)
+                    : [...ids, id]
+                );
+            };
 
             const colors = ['Grøn', 'Gul', 'Orange', 'Blå', 'Lilla', 'Rød', 'Sort', 'Hvid', 'Pink'];
             
@@ -766,7 +825,7 @@
                                     sessions
                                         .filter(session => editingSessionId == null || editingSessionId === session.id)
                                         .map((session, i) => (
-                                            <div key={session.id || i} className="bg-slate-800/50 backdrop-blur rounded-2xl p-5 border border-slate-700">
+                                            <div key={session.id || i} className="bg-slate-800/50 backdrop-blur rounded-2xl p-5 border border-slate-700 mb-2">
                                                 {editingSessionId === session.id ? (
                                                     <div className="space-y-4">
                                                         <div>
@@ -965,68 +1024,67 @@
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div>
-                                                        <div className="flex justify-between items-start mb-3">
-                                                            <div>
-                                                                <h3 className="text-lg font-semibold">
-                                                                    {new Date(session.date).toLocaleDateString('da-DK', {
-                                                                        day: 'numeric',
-                                                                        month: 'long',
-                                                                        year: 'numeric'
-                                                                    })}
-                                                                </h3>
-                                                                <p className="text-slate-400 text-sm">{session.location}</p>
+                                                    <>
+                                                        <button className="w-full text-left" onClick={() => toggleSessionOpen(session.id)}>
+                                                            <div className="flex justify-between items-start cursor-pointer">
+                                                                <div>
+                                                                    <h3 className="text-lg font-semibold">
+                                                                        {new Date(session.date).toLocaleDateString('da-DK', {
+                                                                            day: 'numeric',
+                                                                            month: 'long',
+                                                                            year: 'numeric'
+                                                                        })}
+                                                                    </h3>
+                                                                    <p className="text-slate-400 text-sm">{session.location}</p>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    {(!session.location || !session.duration) ? (
+                                                                        <span className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">Kladde</span>
+                                                                    ) : (
+                                                                        <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-semibold">{session.duration}</span>
+                                                                    )}
+                                                                    <span className="ml-4 text-2xl text-blue-200">{openSessionIds.includes(session.id) ? '−' : '+'}</span>
+                                                                    {session.id && (
+                                                                        <button type="button" onClick={e => {e.stopPropagation(); startEditSession(session)}} className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200" title="Rediger">
+                                                                            <Icon name="Edit" size={18} />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             </div>
-                                                            <div className="flex items-center gap-2">
-                                                                {(!session.location || !session.duration) ? (
-                                                                    <span className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">Kladde</span>
-                                                                ) : (
-                                                                    <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-semibold">{session.duration}</span>
+                                                        </button>
+                                                        {openSessionIds.includes(session.id) && (
+                                                            <>
+                                                                {session.exercises && session.exercises.length > 0 && (
+                                                                    <div className="mb-3">
+                                                                        <h4 className="text-sm font-semibold text-slate-400 mb-2">Øvelser</h4>
+                                                                        <div className="space-y-1">
+                                                                            {session.exercises.map((ex, j) => (
+                                                                                <div key={j} className="text-sm bg-slate-700/30 rounded px-3 py-1">{ex}</div>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
                                                                 )}
-                                                                {session.id && (
-                                                                    <button
-                                                                        onClick={() => startEditSession(session)}
-                                                                        className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200"
-                                                                        title="Rediger"
-                                                                    >
-                                                                        <Icon name="Edit" size={18} />
-                                                                    </button>
+                                                                {session.routes && session.routes.length > 0 && (
+                                                                    <div>
+                                                                        <h4 className="text-sm font-semibold text-slate-400 mb-2">Ruter</h4>
+                                                                        <div className="space-y-1">
+                                                                            {session.routes.map((route, j) => (
+                                                                                <div key={j} className="text-sm bg-slate-700/30 rounded px-3 py-1">
+                                                                                    <span className="font-semibold">{route.color}</span>
+                                                                                    {route.number && <span> {route.number}</span>}
+                                                                                    {route.attempts && <span className="text-slate-400"> ({route.attempts})</span>}
+                                                                                    {route.note && <span className="text-orange-400"> - {route.note}</span>}
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
                                                                 )}
-                                                            </div>
-                                                        </div>
-
-                                        {session.exercises && session.exercises.length > 0 && (
-                                            <div className="mb-3">
-                                                <h4 className="text-sm font-semibold text-slate-400 mb-2">Øvelser</h4>
-                                                <div className="space-y-1">
-                                                    {session.exercises.map((ex, j) => (
-                                                        <div key={j} className="text-sm bg-slate-700/30 rounded px-3 py-1">
-                                                            {ex}
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
                                             </div>
-                                        )}
-
-                                        {session.routes && session.routes.length > 0 && (
-                                            <div>
-                                                <h4 className="text-sm font-semibold text-slate-400 mb-2">Ruter</h4>
-                                                <div className="space-y-1">
-                                                    {session.routes.map((route, j) => (
-                                                        <div key={j} className="text-sm bg-slate-700/30 rounded px-3 py-1">
-                                                            <span className="font-semibold">{route.color}</span>
-                                                            {route.number && <span> {route.number}</span>}
-                                                            {route.attempts && <span className="text-slate-400"> ({route.attempts})</span>}
-                                                            {route.note && <span className="text-orange-400"> - {route.note}</span>}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                            </div>
-                                        )}
-                                    </div>
-                                    ))
+                                        ))
                                 )}
                             </div>
                         )}
