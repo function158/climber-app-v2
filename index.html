@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Climbing.</title>
+    <title>Climber.IO.</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -174,7 +174,7 @@
                                 routes: []
                             });
                             setShowNewSession(false);
-                            setCurrentPage('home');
+                            setCurrentPage('sessions');
                         } else {
                             console.error('Error saving session:', error);
                             alert('Fejl ved gemning af session. Tjek din internetforbindelse.');
@@ -206,7 +206,7 @@
                             routes: []
                         });
                         setShowNewSession(false);
-                        setCurrentPage('home');
+                        setCurrentPage('sessions');
                     } else {
                         console.error('Error saving draft session:', error);
                         alert('Fejl ved gemning af kladde. Tjek din internetforbindelse.');
@@ -763,235 +763,237 @@
                                         Ingen sessioner endnu. Tilføj din første! 💪
                                     </div>
                                 ) : (
-                                    sessions.map((session, i) => (
-                                    <div key={session.id || i} className="bg-slate-800/50 backdrop-blur rounded-2xl p-5 border border-slate-700">
-                                        {editingSessionId === session.id ? (
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <label className="block text-sm text-slate-400 mb-2">Dato</label>
-                                                    <input
-                                                        type="date"
-                                                        value={editSession?.date || ''}
-                                                        onChange={(e) => setEditSession({ ...editSession, date: e.target.value })}
-                                                        className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm text-slate-400 mb-2">Lokation</label>
-                                                    <input
-                                                        type="text"
-                                                        value={editSession?.location || ''}
-                                                        onChange={(e) => setEditSession({ ...editSession, location: e.target.value })}
-                                                        className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm text-slate-400 mb-2">Varighed</label>
-                                                    <input
-                                                        type="text"
-                                                        value={editSession?.duration || ''}
-                                                        onChange={(e) => setEditSession({ ...editSession, duration: e.target.value })}
-                                                        className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                                                    />
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-sm text-slate-400 mb-2">Øvelser</label>
-                                                    
-                                                    {/* Øvelses-knapper */}
-                                                    <div className="mb-4">
-                                                        <div className="mb-3">
+                                    sessions
+                                        .filter(session => editingSessionId == null || editingSessionId === session.id)
+                                        .map((session, i) => (
+                                            <div key={session.id || i} className="bg-slate-800/50 backdrop-blur rounded-2xl p-5 border border-slate-700">
+                                                {editingSessionId === session.id ? (
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block text-sm text-slate-400 mb-2">Dato</label>
                                                             <input
-                                                                type="number"
-                                                                value={exerciseReps}
-                                                                onChange={(e) => setExerciseReps(e.target.value)}
-                                                                placeholder="Antal reps"
+                                                                type="date"
+                                                                value={editSession?.date || ''}
+                                                                onChange={(e) => setEditSession({ ...editSession, date: e.target.value })}
                                                                 className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                             />
                                                         </div>
-                                                        
-                                                        <div className="grid grid-cols-2 gap-2 mb-3">
-                                                            {commonExercises.map((exercise) => (
-                                                                <button
-                                                                    key={exercise}
-                                                                    onClick={() => setSelectedExercise(exercise)}
-                                                                    className={`p-2 rounded-lg text-sm font-medium transition-all ${
-                                                                        selectedExercise === exercise
-                                                                            ? 'bg-blue-500 text-white'
-                                                                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                                                                    }`}
-                                                                >
-                                                                    {exercise}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                        
-                                                        {selectedExercise && exerciseReps && (
-                                                            <div className="mb-3">
-                                                                <button
-                                                                    onClick={() => addEditExerciseWithReps(selectedExercise, exerciseReps)}
-                                                                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
-                                                                >
-                                                                    <Icon name="Plus" size={24} />
-                                                                    Tilføj {selectedExercise}: {exerciseReps} reps
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Manuel tilføjelse */}
-                                                    <div className="flex gap-2 mb-2">
-                                                        <input
-                                                            type="text"
-                                                            value={newExercise}
-                                                            onChange={(e) => setNewExercise(e.target.value)}
-                                                            onKeyPress={(e) => e.key === 'Enter' && addEditExercise()}
-                                                            placeholder="Eller skriv manuelt (f.eks. 10 pull ups)"
-                                                            className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                                                        />
-                                                        <button
-                                                            onClick={addEditExercise}
-                                                            className="bg-blue-500 hover:bg-blue-600 px-4 rounded-lg"
-                                                        >
-                                                            <Icon name="Plus" size={20} />
-                                                        </button>
-                                                    </div>
-                                                    
-                                                    {editSession?.exercises?.map((ex, i) => (
-                                                        <div key={i} className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2 mb-1 text-sm">
-                                                            <span className="flex-1">{ex}</span>
-                                                            <button
-                                                                onClick={() => removeEditExercise(i)}
-                                                                className="text-red-400 hover:text-red-300"
-                                                            >
-                                                                <Icon name="X" size={16} />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-sm text-slate-400 mb-2">Ruter</label>
-                                                    <div className="space-y-2 mb-2">
-                                                        <select
-                                                            value={newRoute.color}
-                                                            onChange={(e) => setNewRoute({...newRoute, color: e.target.value})}
-                                                            className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                                                        >
-                                                            <option value="">Vælg farve</option>
-                                                            {colors.map(c => <option key={c} value={c}>{c}</option>)}
-                                                        </select>
-                                                        
-                                                        <div className="flex gap-2">
+                                                        <div>
+                                                            <label className="block text-sm text-slate-400 mb-2">Lokation</label>
                                                             <input
                                                                 type="text"
-                                                                value={newRoute.number}
-                                                                onChange={(e) => setNewRoute({...newRoute, number: e.target.value})}
-                                                                placeholder="Nummer (valgfrit)"
-                                                                className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                                                            />
-                                                            <input
-                                                                type="number"
-                                                                value={newRoute.attempts}
-                                                                onChange={(e) => setNewRoute({...newRoute, attempts: e.target.value})}
-                                                                placeholder="Forsøg"
-                                                                className="w-24 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                                value={editSession?.location || ''}
+                                                                onChange={(e) => setEditSession({ ...editSession, location: e.target.value })}
+                                                                className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                             />
                                                         </div>
-                                                        
-                                                        <input
-                                                            type="text"
-                                                            value={newRoute.note}
-                                                            onChange={(e) => setNewRoute({...newRoute, note: e.target.value})}
-                                                            placeholder="Note (f.eks. 'Fejl - ikke nok fingerstyrke')"
-                                                            className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                                                        />
-                                                        
-                                                        {newRoute.color && (
-                                                            <button
-                                                                onClick={addEditRoute}
-                                                                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
-                                                            >
-                                                                <Icon name="Plus" size={24} />
-                                                                Tilføj rute
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                    
-                                                    <div className="space-y-1">
-                                                        {editSession?.routes?.map((route, i) => (
-                                                            <div key={i} className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2 text-sm">
-                                                                <div className="flex-1">
-                                                                    <span className="font-semibold">{route.color}</span>
-                                                                    {route.number && <span> {route.number}</span>}
-                                                                    {route.attempts && <span className="text-slate-400"> ({route.attempts})</span>}
-                                                                    {route.note && <span className="text-orange-400"> - {route.note}</span>}
+                                                        <div>
+                                                            <label className="block text-sm text-slate-400 mb-2">Varighed</label>
+                                                            <input
+                                                                type="text"
+                                                                value={editSession?.duration || ''}
+                                                                onChange={(e) => setEditSession({ ...editSession, duration: e.target.value })}
+                                                                className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block text-sm text-slate-400 mb-2">Øvelser</label>
+                                                            
+                                                            {/* Øvelses-knapper */}
+                                                            <div className="mb-4">
+                                                                <div className="mb-3">
+                                                                    <input
+                                                                        type="number"
+                                                                        value={exerciseReps}
+                                                                        onChange={(e) => setExerciseReps(e.target.value)}
+                                                                        placeholder="Antal reps"
+                                                                        className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                                    />
                                                                 </div>
+                                                                
+                                                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                                                    {commonExercises.map((exercise) => (
+                                                                        <button
+                                                                            key={exercise}
+                                                                            onClick={() => setSelectedExercise(exercise)}
+                                                                            className={`p-2 rounded-lg text-sm font-medium transition-all ${
+                                                                                selectedExercise === exercise
+                                                                                    ? 'bg-blue-500 text-white'
+                                                                                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                                                            }`}
+                                                                        >
+                                                                            {exercise}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                                
+                                                                {selectedExercise && exerciseReps && (
+                                                                    <div className="mb-3">
+                                                                        <button
+                                                                            onClick={() => addEditExerciseWithReps(selectedExercise, exerciseReps)}
+                                                                            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
+                                                                        >
+                                                                            <Icon name="Plus" size={24} />
+                                                                            Tilføj {selectedExercise}: {exerciseReps} reps
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Manuel tilføjelse */}
+                                                            <div className="flex gap-2 mb-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={newExercise}
+                                                                    onChange={(e) => setNewExercise(e.target.value)}
+                                                                    onKeyPress={(e) => e.key === 'Enter' && addEditExercise()}
+                                                                    placeholder="Eller skriv manuelt (f.eks. 10 pull ups)"
+                                                                    className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                                />
                                                                 <button
-                                                                    onClick={() => removeEditRoute(i)}
-                                                                    className="text-red-400 hover:text-red-300"
+                                                                    onClick={addEditExercise}
+                                                                    className="bg-blue-500 hover:bg-blue-600 px-4 rounded-lg"
                                                                 >
-                                                                    <Icon name="X" size={16} />
+                                                                    <Icon name="Plus" size={20} />
                                                                 </button>
                                                             </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
+                                                            
+                                                            {editSession?.exercises?.map((ex, i) => (
+                                                                <div key={i} className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2 mb-1 text-sm">
+                                                                    <span className="flex-1">{ex}</span>
+                                                                    <button
+                                                                        onClick={() => removeEditExercise(i)}
+                                                                        className="text-red-400 hover:text-red-300"
+                                                                    >
+                                                                        <Icon name="X" size={16} />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
 
-                                                <div className="flex gap-2 pt-2">
-                                                    <button
-                                                        onClick={updateSession}
-                                                        disabled={updating}
-                                                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
-                                                    >
-                                                        Gem ændringer
-                                                    </button>
-                                                    <button
-                                                        onClick={cancelEditSession}
-                                                        disabled={updating}
-                                                        className="flex-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
-                                                    >
-                                                        Annuller
-                                                    </button>
-                                                    <button
-                                                        onClick={deleteSession}
-                                                        disabled={updating}
-                                                        className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
-                                                    >
-                                                        Slet hele session
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <div>
-                                                        <h3 className="text-lg font-semibold">
-                                                            {new Date(session.date).toLocaleDateString('da-DK', {
-                                                                day: 'numeric',
-                                                                month: 'long',
-                                                                year: 'numeric'
-                                                            })}
-                                                        </h3>
-                                                        <p className="text-slate-400 text-sm">{session.location}</p>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        {(!session.location || !session.duration) ? (
-                                                            <span className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">Kladde</span>
-                                                        ) : (
-                                                            <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-semibold">{session.duration}</span>
-                                                        )}
-                                                        {session.id && (
+                                                        <div>
+                                                            <label className="block text-sm text-slate-400 mb-2">Ruter</label>
+                                                            <div className="space-y-2 mb-2">
+                                                                <select
+                                                                    value={newRoute.color}
+                                                                    onChange={(e) => setNewRoute({...newRoute, color: e.target.value})}
+                                                                    className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                                >
+                                                                    <option value="">Vælg farve</option>
+                                                                    {colors.map(c => <option key={c} value={c}>{c}</option>)}
+                                                                </select>
+                                                                
+                                                                <div className="flex gap-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={newRoute.number}
+                                                                        onChange={(e) => setNewRoute({...newRoute, number: e.target.value})}
+                                                                        placeholder="Nummer (valgfrit)"
+                                                                        className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                                    />
+                                                                    <input
+                                                                        type="number"
+                                                                        value={newRoute.attempts}
+                                                                        onChange={(e) => setNewRoute({...newRoute, attempts: e.target.value})}
+                                                                        placeholder="Forsøg"
+                                                                        className="w-24 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                                    />
+                                                                </div>
+                                                                
+                                                                <input
+                                                                    type="text"
+                                                                    value={newRoute.note}
+                                                                    onChange={(e) => setNewRoute({...newRoute, note: e.target.value})}
+                                                                    placeholder="Note (f.eks. 'Fejl - ikke nok fingerstyrke')"
+                                                                    className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                                />
+                                                                
+                                                                {newRoute.color && (
+                                                                    <button
+                                                                        onClick={addEditRoute}
+                                                                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
+                                                                    >
+                                                                        <Icon name="Plus" size={24} />
+                                                                        Tilføj rute
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                            
+                                                            <div className="space-y-1">
+                                                                {editSession?.routes?.map((route, i) => (
+                                                                    <div key={i} className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2 text-sm">
+                                                                        <div className="flex-1">
+                                                                            <span className="font-semibold">{route.color}</span>
+                                                                            {route.number && <span> {route.number}</span>}
+                                                                            {route.attempts && <span className="text-slate-400"> ({route.attempts})</span>}
+                                                                            {route.note && <span className="text-orange-400"> - {route.note}</span>}
+                                                                        </div>
+                                                                        <button
+                                                                            onClick={() => removeEditRoute(i)}
+                                                                            className="text-red-400 hover:text-red-300"
+                                                                        >
+                                                                            <Icon name="X" size={16} />
+                                                                        </button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex gap-2 pt-2">
                                                             <button
-                                                                onClick={() => startEditSession(session)}
-                                                                className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200"
-                                                                title="Rediger"
+                                                                onClick={updateSession}
+                                                                disabled={updating}
+                                                                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
                                                             >
-                                                                <Icon name="Edit" size={18} />
+                                                                Gem ændringer
                                                             </button>
-                                                        )}
+                                                            <button
+                                                                onClick={cancelEditSession}
+                                                                disabled={updating}
+                                                                className="flex-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
+                                                            >
+                                                                Annuller
+                                                            </button>
+                                                            <button
+                                                                onClick={deleteSession}
+                                                                disabled={updating}
+                                                                className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
+                                                            >
+                                                                Slet hele session
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                ) : (
+                                                    <div>
+                                                        <div className="flex justify-between items-start mb-3">
+                                                            <div>
+                                                                <h3 className="text-lg font-semibold">
+                                                                    {new Date(session.date).toLocaleDateString('da-DK', {
+                                                                        day: 'numeric',
+                                                                        month: 'long',
+                                                                        year: 'numeric'
+                                                                    })}
+                                                                </h3>
+                                                                <p className="text-slate-400 text-sm">{session.location}</p>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                {(!session.location || !session.duration) ? (
+                                                                    <span className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">Kladde</span>
+                                                                ) : (
+                                                                    <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-semibold">{session.duration}</span>
+                                                                )}
+                                                                {session.id && (
+                                                                    <button
+                                                                        onClick={() => startEditSession(session)}
+                                                                        className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200"
+                                                                        title="Rediger"
+                                                                    >
+                                                                        <Icon name="Edit" size={18} />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
 
                                         {session.exercises && session.exercises.length > 0 && (
                                             <div className="mb-3">
