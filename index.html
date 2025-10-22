@@ -73,11 +73,20 @@
             });
             const [newExercise, setNewExercise] = useState('');
             const [newRoute, setNewRoute] = useState({ color: '', number: '', attempts: '', note: '' });
+            const [selectedExercise, setSelectedExercise] = useState('');
+            const [exerciseReps, setExerciseReps] = useState('');
             const [editingSessionId, setEditingSessionId] = useState(null);
             const [editSession, setEditSession] = useState(null);
             const [updating, setUpdating] = useState(false);
 
             const colors = ['Gul', 'Orange', 'Blå', 'Sort', 'Rød', 'Grøn', 'Lilla', 'Hvid', 'Pink'];
+            
+            // Almindelige klatre-øvelser
+            const commonExercises = [
+                'Pull ups', 'Dips', 'External rotation', 'Hangboard', 'Campus board',
+                'Core øvelser', 'Fingerstyrke', 'Push ups', 'Plank', 'Dead hang',
+                'L-sit', 'Muscle ups', 'Handstand', 'Pistol squats', 'Burpees'
+            ];
 
             useEffect(() => {
                 loadSessions();
@@ -109,6 +118,18 @@
                         exercises: [...currentSession.exercises, newExercise]
                     });
                     setNewExercise('');
+                }
+            };
+
+            const addExerciseWithReps = (exercise, reps) => {
+                if (exercise && reps) {
+                    const exerciseText = `${exercise}: ${reps} reps`;
+                    setCurrentSession({
+                        ...currentSession,
+                        exercises: [...currentSession.exercises, exerciseText]
+                    });
+                    setSelectedExercise('');
+                    setExerciseReps('');
                 }
             };
 
@@ -236,6 +257,18 @@
                         exercises: [...editSession.exercises, newExercise]
                     });
                     setNewExercise('');
+                }
+            };
+
+            const addEditExerciseWithReps = (exercise, reps) => {
+                if (exercise && reps) {
+                    const exerciseText = `${exercise}: ${reps} reps`;
+                    setEditSession({
+                        ...editSession,
+                        exercises: [...editSession.exercises, exerciseText]
+                    });
+                    setSelectedExercise('');
+                    setExerciseReps('');
                 }
             };
 
@@ -528,13 +561,53 @@
 
                                     <div>
                                         <label className="block text-sm text-slate-400 mb-2">Øvelser</label>
+                                        
+                                        {/* Øvelses-knapper */}
+                                        <div className="mb-4">
+                                            <div className="grid grid-cols-2 gap-2 mb-3">
+                                                {commonExercises.map((exercise) => (
+                                                    <button
+                                                        key={exercise}
+                                                        onClick={() => setSelectedExercise(exercise)}
+                                                        className={`p-2 rounded-lg text-sm font-medium transition-all ${
+                                                            selectedExercise === exercise
+                                                                ? 'bg-blue-500 text-white'
+                                                                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                                        }`}
+                                                    >
+                                                        {exercise}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            
+                                            {selectedExercise && (
+                                                <div className="flex gap-2 mb-3">
+                                                    <input
+                                                        type="number"
+                                                        value={exerciseReps}
+                                                        onChange={(e) => setExerciseReps(e.target.value)}
+                                                        placeholder="Antal reps"
+                                                        className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                    />
+                                                    <button
+                                                        onClick={() => addExerciseWithReps(selectedExercise, exerciseReps)}
+                                                        className="bg-green-500 hover:bg-green-600 px-4 rounded-lg flex items-center gap-2"
+                                                    >
+                                                        <Icon name="Plus" size={20} />
+                                                        Tilføj
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Manuel tilføjelse */}
                                         <div className="flex gap-2 mb-2">
                                             <input
                                                 type="text"
                                                 value={newExercise}
                                                 onChange={(e) => setNewExercise(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && addExercise()}
-                                                placeholder="f.eks. 10 pull ups"
+                                                placeholder="Eller skriv manuelt (f.eks. 10 pull ups)"
                                                 className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                             />
                                             <button
@@ -544,6 +617,7 @@
                                                 <Icon name="Plus" size={20} />
                                             </button>
                                         </div>
+                                        
                                         {currentSession.exercises.map((ex, i) => (
                                             <div key={i} className="bg-slate-700/50 rounded-lg p-2 mb-1 text-sm">
                                                 {ex}
@@ -669,13 +743,53 @@
 
                                                 <div>
                                                     <label className="block text-sm text-slate-400 mb-2">Øvelser</label>
+                                                    
+                                                    {/* Øvelses-knapper */}
+                                                    <div className="mb-4">
+                                                        <div className="grid grid-cols-2 gap-2 mb-3">
+                                                            {commonExercises.map((exercise) => (
+                                                                <button
+                                                                    key={exercise}
+                                                                    onClick={() => setSelectedExercise(exercise)}
+                                                                    className={`p-2 rounded-lg text-sm font-medium transition-all ${
+                                                                        selectedExercise === exercise
+                                                                            ? 'bg-blue-500 text-white'
+                                                                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                                                    }`}
+                                                                >
+                                                                    {exercise}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                        
+                                                        {selectedExercise && (
+                                                            <div className="flex gap-2 mb-3">
+                                                                <input
+                                                                    type="number"
+                                                                    value={exerciseReps}
+                                                                    onChange={(e) => setExerciseReps(e.target.value)}
+                                                                    placeholder="Antal reps"
+                                                                    className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                                />
+                                                                <button
+                                                                    onClick={() => addEditExerciseWithReps(selectedExercise, exerciseReps)}
+                                                                    className="bg-green-500 hover:bg-green-600 px-4 rounded-lg flex items-center gap-2"
+                                                                >
+                                                                    <Icon name="Plus" size={20} />
+                                                                    Tilføj
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Manuel tilføjelse */}
                                                     <div className="flex gap-2 mb-2">
                                                         <input
                                                             type="text"
                                                             value={newExercise}
                                                             onChange={(e) => setNewExercise(e.target.value)}
                                                             onKeyPress={(e) => e.key === 'Enter' && addEditExercise()}
-                                                            placeholder="f.eks. 10 pull ups"
+                                                            placeholder="Eller skriv manuelt (f.eks. 10 pull ups)"
                                                             className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                         />
                                                         <button
@@ -685,6 +799,7 @@
                                                             <Icon name="Plus" size={20} />
                                                         </button>
                                                     </div>
+                                                    
                                                     {editSession?.exercises?.map((ex, i) => (
                                                         <div key={i} className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2 mb-1 text-sm">
                                                             <span className="flex-1">{ex}</span>
