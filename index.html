@@ -100,7 +100,7 @@
                         .order('date', { ascending: false });
                     
                     if (!error) {
-                        setSessions(data);
+                        setSessions(sortSessions(data));
                     } else {
                         console.error('Error loading sessions:', error);
                     }
@@ -108,6 +108,18 @@
                     console.error('Error loading sessions:', error);
                 }
                 setLoading(false);
+            };
+
+            const sortSessions = (list) => {
+                if (!Array.isArray(list)) return [];
+                return [...list].sort((a, b) => {
+                    const aDraft = !a?.location || !a?.duration;
+                    const bDraft = !b?.location || !b?.duration;
+                    if (aDraft !== bDraft) return aDraft ? -1 : 1;
+                    const aDate = a?.date ? new Date(a.date).getTime() : 0;
+                    const bDate = b?.date ? new Date(b.date).getTime() : 0;
+                    return bDate - aDate; // newest first
+                });
             };
 
             const addExercise = () => {
@@ -153,7 +165,7 @@
                             .single();
 
                         if (!error) {
-                            setSessions([inserted, ...sessions]);
+                            setSessions(sortSessions([inserted, ...sessions]));
                             setCurrentSession({
                                 date: new Date().toISOString().split('T')[0],
                                 location: '',
@@ -173,6 +185,37 @@
                     }
                     setSaving(false);
                 }
+            };
+
+            const saveDraftSession = async () => {
+                setSaving(true);
+                try {
+                    const { data: inserted, error } = await supabase
+                        .from('sessions')
+                        .insert(currentSession)
+                        .select()
+                        .single();
+
+                    if (!error) {
+                        setSessions(sortSessions([inserted, ...sessions]));
+                        setCurrentSession({
+                            date: new Date().toISOString().split('T')[0],
+                            location: '',
+                            duration: '',
+                            exercises: [],
+                            routes: []
+                        });
+                        setShowNewSession(false);
+                        setCurrentPage('home');
+                    } else {
+                        console.error('Error saving draft session:', error);
+                        alert('Fejl ved gemning af kladde. Tjek din internetforbindelse.');
+                    }
+                } catch (error) {
+                    console.error('Error saving draft session:', error);
+                    alert('Fejl ved gemning af kladde. Tjek din internetforbindelse.');
+                }
+                setSaving(false);
             };
 
             const startEditSession = (session) => {
@@ -219,7 +262,6 @@
 
             const updateSession = async () => {
                 if (!editingSessionId || !editSession) return;
-                if (!editSession.location || !editSession.duration) return;
                 setUpdating(true);
                 try {
                     const { data: updated, error } = await supabase
@@ -239,7 +281,7 @@
                         console.error('Error updating session:', error);
                         alert('Kunne ikke opdatere session.');
                     } else {
-                        setSessions(sessions.map(s => (s.id === editingSessionId ? { ...s, ...updated } : s)));
+                        setSessions(sortSessions(sessions.map(s => (s.id === editingSessionId ? { ...s, ...updated } : s))));
                         cancelEditSession();
                     }
                 } catch (e) {
@@ -696,6 +738,13 @@
                                             {saving ? <Icon name="Loader2" size={20} /> : 'Gem Session'}
                                         </button>
                                         <button
+                                            onClick={saveDraftSession}
+                                            disabled={saving}
+                                            className="flex-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
+                                        >
+                                            Gem som kladde
+                                        </button>
+                                        <button
                                             onClick={() => setShowNewSession(false)}
                                             disabled={saving}
                                             className="flex-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
@@ -707,13 +756,14 @@
                             </div>
                         )}
 
-                        <div className="space-y-4">
-                            {sessions.length === 0 ? (
-                                <div className="text-center text-slate-400 py-12">
-                                    Ingen sessioner endnu. Tilføj din første! 💪
-                                </div>
-                            ) : (
-                                sessions.map((session, i) => (
+                        {!showNewSession && (
+                            <div className="space-y-4">
+                                {sessions.length === 0 ? (
+                                    <div className="text-center text-slate-400 py-12">
+                                        Ingen sessioner endnu. Tilføj din første! 💪
+                                    </div>
+                                ) : (
+                                    sessions.map((session, i) => (
                                     <div key={session.id || i} className="bg-slate-800/50 backdrop-blur rounded-2xl p-5 border border-slate-700">
                                         {editingSessionId === session.id ? (
                                             <div className="space-y-4">
@@ -926,9 +976,11 @@
                                                         <p className="text-slate-400 text-sm">{session.location}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-semibold">
-                                                            {session.duration}
-                                                        </span>
+                                                        {(!session.location || !session.duration) ? (
+                                                            <span className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">Kladde</span>
+                                                        ) : (
+                                                            <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-semibold">{session.duration}</span>
+                                                        )}
                                                         {session.id && (
                                                             <button
                                                                 onClick={() => startEditSession(session)}
@@ -972,9 +1024,10 @@
                                             </div>
                                         )}
                                     </div>
-                                ))
-                            )}
-                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
 
                         {/* Bottom Navigation */}
                         <div className="fixed bottom-0 left-0 right-0 bg-slate-800/95 backdrop-blur border-t border-slate-700">
