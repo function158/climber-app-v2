@@ -57,6 +57,35 @@
         // Color difficulty order (hardest first)
         const colorOrder = ['Sort', 'Rød', 'Lilla', 'Blå', 'Grøn', 'Orange', 'Gul', 'Hvid', 'Pink'];
 
+        // Farvemapping (kan placeres øverst blandt dine konstanter)
+        const colorHexMap = {
+          'Grøn': '#2ecc40',
+          'Gul': '#f4d03f',
+          'Orange': '#e67e22',
+          'Blå': '#2980b9',
+          'Lilla': '#8e44ad',
+          'Rød': '#e74c3c',
+          'Sort': '#2d2d2d',
+          'Hvid': '#ecf0f1',
+          'Pink': '#fd5eaf'
+        };
+
+        // Farvemapping (øverst sammen med colorHexMap)
+        function getGradient(color) {
+          switch(color) {
+            case 'Grøn':   return 'linear-gradient(90deg,#236c41 0%,#358356 100%)';
+            case 'Gul':    return 'linear-gradient(90deg,#9b8918 0%,#c3b12e 100%)';
+            case 'Orange': return 'linear-gradient(90deg,#a76112 0%,#d78f4a 100%)';
+            case 'Blå':    return 'linear-gradient(90deg,#20415e 0%,#4d759e 100%)';
+            case 'Lilla':  return 'linear-gradient(90deg,#57386d 0%,#8c6ab5 100%)';
+            case 'Rød':    return 'linear-gradient(90deg,#b03d2e 0%,#e06648 100%)';
+            case 'Sort':   return 'linear-gradient(90deg,#23272e 0%,#45484d 100%)';
+            case 'Hvid':   return 'linear-gradient(90deg,#f2f2f2 0%,#dedede 100%)';
+            case 'Pink':   return 'linear-gradient(90deg,#a42f8b 0%,#cf7cd8 100%)';
+            default:       return 'linear-gradient(90deg,#888 0%,#bbb 100%)';
+          }
+        }
+
         // Accordion med smooth height animation (bedste praksis)
         function Accordion({ open, children }) {
             const ref = React.useRef(null);
@@ -778,11 +807,15 @@
                                         
                                         <div className="space-y-1">
                                             {currentSession.routes.map((route, i) => (
-                                                <div key={i} className="bg-slate-700/50 rounded-lg p-2 text-sm">
-                                                    <span className="font-semibold">{route.color}</span>
-                                                    {route.number && <span> {route.number}</span>}
-                                                    {route.attempts && <span className="text-slate-400"> ({route.attempts})</span>}
-                                                    {route.note && <span className="text-orange-400"> - {route.note}</span>}
+                                                <div
+                                                    key={i}
+                                                    className="rounded-lg p-2 text-sm mb-1 flex items-center shadow border"
+                                                    style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
+                                                >
+                                                    <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
+                                                    {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
+                                                    {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
+                                                    {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
                                                 </div>
                                             ))}
                                         </div>
@@ -981,16 +1014,20 @@
                                                             
                                                             <div className="space-y-1">
                                                                 {editSession?.routes?.map((route, i) => (
-                                                                    <div key={i} className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2 text-sm">
+                                                                    <div
+                                                                        key={i}
+                                                                        className="flex items-center gap-2 rounded-lg p-2 text-sm mb-1 shadow border"
+                                                                        style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
+                                                                    >
                                                                         <div className="flex-1">
-                                                                            <span className="font-semibold">{route.color}</span>
-                                                                            {route.number && <span> {route.number}</span>}
-                                                                            {route.attempts && <span className="text-slate-400"> ({route.attempts})</span>}
-                                                                            {route.note && <span className="text-orange-400"> - {route.note}</span>}
+                                                                            <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
+                                                                            {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
+                                                                            {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
+                                                                            {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
                                                                         </div>
                                                                         <button
                                                                             onClick={() => removeEditRoute(i)}
-                                                                            className="text-red-400 hover:text-red-300"
+                                                                            className="text-red-300 hover:text-red-200"
                                                                         >
                                                                             <Icon name="X" size={16} />
                                                                         </button>
@@ -1069,11 +1106,15 @@
                                                                         <h4 className="text-sm font-semibold text-slate-400 mb-2">Ruter</h4>
                                                                         <div className="space-y-1">
                                                                             {session.routes.map((route, j) => (
-                                                                                <div key={j} className="text-sm bg-slate-700/30 rounded px-3 py-1">
-                                                                                    <span className="font-semibold">{route.color}</span>
-                                                                                    {route.number && <span> {route.number}</span>}
-                                                                                    {route.attempts && <span className="text-slate-400"> ({route.attempts})</span>}
-                                                                                    {route.note && <span className="text-orange-400"> - {route.note}</span>}
+                                                                                <div
+                                                                                    key={j}
+                                                                                    className="text-sm rounded-lg px-3 py-2 mb-1 shadow border"
+                                                                                    style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
+                                                                                >
+                                                                                    <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
+                                                                                    {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
+                                                                                    {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
+                                                                                    {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
                                                                                 </div>
                                                                             ))}
                                                                         </div>
