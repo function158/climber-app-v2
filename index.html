@@ -175,8 +175,7 @@
             
             // Almindelige klatre-øvelser
             const commonExercises = [
-                'Pull ups', 'Dips', 'External rotation', 'Hangboard', 
-                'Core øvelser', 'Fingerstyrke', 'Push ups', 'Plank'
+                'Pull ups', 'Dips', 'Push ups', 'External rotation', 'Fingerstyrke', 'Plank'
             ];
 
             useEffect(() => {
@@ -650,6 +649,73 @@
                                             {stats.totalRoutes}
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* Preview: totals for trackede øvelser på tværs af sessions (kun antal) */}
+                                <div className="grid grid-cols-2 gap-3 mb-6">
+                                    {(() => {
+                                        // Konfigurer hvilke øvelser der skal trackes og deres farver
+                                        const trackedExercises = [
+                                            { key: 'pull ups', label: 'Pull ups', colorClass: 'text-cyan-400' },
+                                            { key: 'dips', label: 'Dips', colorClass: 'text-amber-400' },
+                                            { key: 'push ups', label: 'Push ups', colorClass: 'text-amber-400' },
+                                            // Tilføj flere standard-øvelser her hvis ønsket
+                                        ];
+                                        // Hent brugerdefinerede øvelser fra sessions (optionelt kan dette udvides til UI senere)
+                                        // Her samler vi alle øvelsesnavne fundet i sessions og kan vælge at tracke dem også
+                                        const now = new Date();
+                                        let startDate = new Date();
+                                        if (timePeriod === 'week') startDate.setDate(now.getDate() - 7);
+                                        else if (timePeriod === 'month') startDate.setMonth(now.getMonth() - 1);
+                                        else if (timePeriod === 'year') startDate.setFullYear(now.getFullYear() - 1);
+                                        const filtered = sessions.filter(s => new Date(s.date) >= startDate);
+
+                                        const parseReps = (label) => {
+                                            const m = label.match(/(\d+)\s*reps/i) || label.match(/^(\d+)/);
+                                            return m ? parseInt(m[1], 10) : 0;
+                                        };
+                                        const sumFor = (needle) => filtered.reduce((sum, s) => {
+                                            const arr = Array.isArray(s.exercises) ? s.exercises : [];
+                                            return sum + arr.reduce((acc, e) => {
+                                                if (typeof e === 'string' && e.toLowerCase().includes(needle)) {
+                                                    return acc + parseReps(e);
+                                                }
+                                                return acc;
+                                            }, 0);
+                                        }, 0);
+
+                                        // Muliggør automatisk tracking af andre øvelser som allerede er brugt i sessions
+                                        // Finder unikke øvelsesnavne i perioden baseret på tekst før kolon eller første ord
+                                        const discovered = new Map();
+                                        filtered.forEach(s => {
+                                            const arr = Array.isArray(s.exercises) ? s.exercises : [];
+                                            arr.forEach(e => {
+                                                if (typeof e !== 'string') return;
+                                                const lower = e.toLowerCase();
+                                                // forsøg at udtrække navnet: før kolon, ellers alfabetiske ord i starten
+                                                const nameMatch = lower.match(/^([a-zæøå\s]+?):/) || lower.match(/^([a-zæøå]+(?:\s+[a-zæøå]+)?)/);
+                                                if (nameMatch) {
+                                                    const name = nameMatch[1].trim();
+                                                    if (!discovered.has(name)) discovered.set(name, name);
+                                                }
+                                            });
+                                        });
+
+                                        // Byg render-liste: de prædefinerede først, derefter andre opdagede som ikke allerede er med
+                                        const already = new Set(trackedExercises.map(te => te.key));
+                                        const dynamic = Array.from(discovered.keys())
+                                            .filter(k => !already.has(k))
+                                            .map(k => ({ key: k, label: k.replace(/\b\w/g, c => c.toUpperCase()), colorClass: 'text-lime-300' }));
+
+                                        const toRender = [...trackedExercises, ...dynamic];
+
+                                        return toRender.map(item => (
+                                            <div key={item.key} className="bg-slate-700/50 rounded-xl p-4">
+                                                <div className="text-slate-400 text-sm">{item.label}</div>
+                                                <div className={`text-2xl font-bold ${item.colorClass}`}>{sumFor(item.key)}</div>
+                                            </div>
+                                        ));
+                                    })()}
                                 </div>
 
                                 {Object.keys(stats.colorCounts).length > 0 ? (
