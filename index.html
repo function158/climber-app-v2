@@ -233,26 +233,26 @@
             };
 
             const loadSessions = async () => {
-                setLoading(true);
-                try {
-                    const { data, error } = await supabase
-                        .from('sessions')
-                        .select('*')
-                        .order('date', { ascending: false });
-                    
-                    if (!error) {
-                        setSessions(sortSessions(data));
-                        // Extract unique locations from loaded sessions
-                        const uniqueLocations = [...new Set(data.map(s => s.location).filter(Boolean))];
-                        setLocationsList(sortLocations(uniqueLocations));
-                    } else {
-                        console.error('Error loading sessions:', error);
-                    }
-                } catch (error) {
-                    console.error('Error loading sessions:', error);
-                }
-                setLoading(false);
-            };
+    setLoading(true);
+    try {
+        const { data, error } = await supabase
+            .from('sessions')
+            .select('*')
+            .order('date', { ascending: false });
+        
+        if (!error) {
+            setSessions(sortSessions(data));
+            // Udtræk unikke lokationer fra alle sessions
+            const uniqueLocations = [...new Set(data.map(s => s.location).filter(Boolean))];
+            setLocationsList(sortLocations(uniqueLocations));
+        } else {
+            console.error('Error loading sessions:', error);
+        }
+    } catch (error) {
+        console.error('Error loading sessions:', error);
+    }
+    setLoading(false);
+};
 
             // Handler to add a location to the locationsList (for future selection)
             const addLocationToList = (locationName, isEditing = false) => {
