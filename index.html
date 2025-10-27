@@ -150,7 +150,7 @@
                 routes: []
             });
             const [newExercise, setNewExercise] = useState('');
-            const [newRoute, setNewRoute] = useState({ color: '', number: '', attempts: '', note: '' });
+            const [newRoute, setNewRoute] = useState({ color: '', number: '', attempts: '', note: '', wallHeight: '5' }); // Added wallHeight to route, default to '5'
             const [selectedExercise, setSelectedExercise] = useState('');
             const [exerciseReps, setExerciseReps] = useState('');
             const [editingSessionId, setEditingSessionId] = useState(null);
@@ -178,6 +178,38 @@
             useEffect(() => {
                 loadSessions();
             }, []);
+
+            // Helper to group and sort routes by wall height
+            const groupAndSortRoutes = (routes) => {
+                if (!routes || routes.length === 0) return [];
+
+                // Map routes to include an original index for stable removal during editing
+                const routesWithOriginalIndex = routes.map((route, originalIndex) => ({ ...route, originalIndex }));
+
+                const grouped = routesWithOriginalIndex.reduce((acc, route) => {
+                    const height = route.wallHeight || '5'; // Default to '5' if not set
+                    if (!acc[height]) {
+                        acc[height] = [];
+                    }
+                    acc[height].push(route);
+                    return acc;
+                }, {});
+
+                // Sort heights: 5, 7, 10 (ascending numerical order)
+                const sortedHeights = Object.keys(grouped).sort((a, b) => parseInt(a) - parseInt(b));
+
+                const result = [];
+                sortedHeights.forEach(height => {
+                    const routesForHeight = grouped[height].sort((a, b) => {
+                        const indexA = colorOrder.indexOf(a.color);
+                        const indexB = colorOrder.indexOf(b.color);
+                        return indexA - indexB;
+                    });
+                    result.push({ wallHeight: height, routes: routesForHeight });
+                });
+
+                return result;
+            };
 
             const loadSessions = async () => {
                 setLoading(true);
@@ -233,12 +265,13 @@
             };
 
             const addRoute = () => {
-                if (newRoute.color) {
+                if (newRoute.color && newRoute.wallHeight) {
                     setCurrentSession({
                         ...currentSession,
                         routes: [...currentSession.routes, { ...newRoute }]
                     });
-                    setNewRoute({ color: '', number: '', attempts: '', note: '' });
+                    // Keep wallHeight, reset other fields
+                    setNewRoute(prev => ({ ...prev, color: '', number: '', attempts: '', note: '' }));
                 }
             };
 
@@ -248,7 +281,7 @@
                     try {
                         const { data: inserted, error } = await supabase
                             .from('sessions')
-                            .insert(currentSession)
+                            .insert({ ...currentSession })
                             .select()
                             .single();
 
@@ -261,6 +294,7 @@
                                 exercises: [],
                                 routes: []
                             });
+                            setNewRoute({ color: '', number: '', attempts: '', note: '', wallHeight: '5' }); // Reset newRoute to default
                             setShowNewSession(false);
                             setCurrentPage('sessions');
                         } else {
@@ -280,7 +314,7 @@
                 try {
                     const { data: inserted, error } = await supabase
                         .from('sessions')
-                        .insert(currentSession)
+                        .insert({ ...currentSession })
                         .select()
                         .single();
 
@@ -293,6 +327,7 @@
                             exercises: [],
                             routes: []
                         });
+                        setNewRoute({ color: '', number: '', attempts: '', note: '', wallHeight: '5' }); // Reset newRoute to default
                         setShowNewSession(false);
                         setCurrentPage('sessions');
                     } else {
@@ -316,12 +351,14 @@
                     exercises: session.exercises || [],
                     routes: session.routes || []
                 });
+                setNewRoute({ color: '', number: '', attempts: '', note: '', wallHeight: '5' }); // Reset newRoute for edit form to default
             };
 
             const cancelEditSession = () => {
                 setEditingSessionId(null);
                 setEditSession(null);
                 setUpdating(false);
+                setNewRoute({ color: '', number: '', attempts: '', note: '', wallHeight: '5' }); // Reset newRoute to default
             };
 
             const deleteSession = async () => {
@@ -409,20 +446,21 @@
             };
 
             const addEditRoute = () => {
-                if (newRoute.color) {
+                if (newRoute.color && newRoute.wallHeight) {
                     setEditSession({
                         ...editSession,
                         routes: [...editSession.routes, { ...newRoute }]
                     });
-                    setNewRoute({ color: '', number: '', attempts: '', note: '' });
+                    // Keep wallHeight, reset other fields
+                    setNewRoute(prev => ({ ...prev, color: '', number: '', attempts: '', note: '' }));
                 }
             };
 
-            const removeEditRoute = (index) => {
-                setEditSession({
-                    ...editSession,
-                    routes: editSession.routes.filter((_, i) => i !== index)
-                });
+            const removeEditRoute = (originalIndex) => {
+                setEditSession(prevEditSession => ({
+                    ...prevEditSession,
+                    routes: prevEditSession.routes.filter((_, i) => i !== originalIndex)
+                }));
             };
 
             const getStats = () => {
@@ -751,11 +789,27 @@
                                         </div>
                                         
                                         {currentSession.exercises.map((ex, i) => (
-                                            <div key={i} className="bg-slate-700/50 rounded-lg p-2 mb-1 text-sm">
-                                                {ex}
+                                            <div key={i} className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2 mb-1 text-sm">
+                                                <span className="flex-1">{ex}</span>
+                                                {/* No remove button for new session exercises yet, only for edit */}
                                             </div>
                                         ))}
                                     </div>
+
+                                    {/* NEW: Wall Height for route, moved here */}
+                                    <div className="pt-2"> {/* Added padding top for spacing */}
+                                        <label className="block text-sm text-slate-400 mb-2">Væghøjde for nye ruter</label>
+                                        <select
+                                            value={newRoute.wallHeight}
+                                            onChange={(e) => setNewRoute({...newRoute, wallHeight: e.target.value})}
+                                            className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                        >
+                                            <option value="5">5 meter</option>
+                                            <option value="7">7 meter</option>
+                                            <option value="10">10 meter</option>
+                                        </select>
+                                    </div>
+                                    {/* END NEW */}
 
                                     <div>
                                         <label className="block text-sm text-slate-400 mb-2">Ruter</label>
@@ -794,7 +848,7 @@
                                                 className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                             />
                                             
-                                            {newRoute.color && (
+                                            {newRoute.color && newRoute.wallHeight && (
                                                 <button
                                                     onClick={addRoute}
                                                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
@@ -805,17 +859,24 @@
                                             )}
                                         </div>
                                         
-                                        <div className="space-y-1">
-                                            {currentSession.routes.map((route, i) => (
-                                                <div
-                                                    key={i}
-                                                    className="rounded-lg p-2 text-sm mb-1 flex items-center shadow border"
-                                                    style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
-                                                >
-                                                    <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
-                                                    {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
-                                                    {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
-                                                    {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
+                                        <div className="space-y-3 mt-4">
+                                            {groupAndSortRoutes(currentSession.routes).map((heightGroup, hIdx) => (
+                                                <div key={hIdx}>
+                                                    <h5 className="text-sm font-semibold text-slate-400 mb-2">{heightGroup.wallHeight} meter væg</h5>
+                                                    <div className="space-y-1">
+                                                        {heightGroup.routes.map((route, i) => (
+                                                            <div
+                                                                key={i}
+                                                                className="rounded-lg p-2 text-sm mb-1 flex items-center shadow border"
+                                                                style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
+                                                            >
+                                                                <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
+                                                                {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
+                                                                {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
+                                                                {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -964,6 +1025,21 @@
                                                             ))}
                                                         </div>
 
+                                                        {/* NEW: Wall Height for route, moved here */}
+                                                        <div className="pt-2"> {/* Added padding top for spacing */}
+                                                            <label className="block text-sm text-slate-400 mb-2">Væghøjde for nye ruter</label>
+                                                            <select
+                                                                value={newRoute.wallHeight}
+                                                                onChange={(e) => setNewRoute({...newRoute, wallHeight: e.target.value})}
+                                                                className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                            >
+                                                                <option value="5">5 meter</option>
+                                                                <option value="7">7 meter</option>
+                                                                <option value="10">10 meter</option>
+                                                            </select>
+                                                        </div>
+                                                        {/* END NEW */}
+
                                                         <div>
                                                             <label className="block text-sm text-slate-400 mb-2">Ruter</label>
                                                             <div className="space-y-2 mb-2">
@@ -1001,7 +1077,7 @@
                                                                     className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                                 />
                                                                 
-                                                                {newRoute.color && (
+                                                                {newRoute.color && newRoute.wallHeight && (
                                                                     <button
                                                                         onClick={addEditRoute}
                                                                         className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
@@ -1012,25 +1088,32 @@
                                                                 )}
                                                             </div>
                                                             
-                                                            <div className="space-y-1">
-                                                                {editSession?.routes?.map((route, i) => (
-                                                                    <div
-                                                                        key={i}
-                                                                        className="flex items-center gap-2 rounded-lg p-2 text-sm mb-1 shadow border"
-                                                                        style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
-                                                                    >
-                                                                        <div className="flex-1">
-                                                                            <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
-                                                                            {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
-                                                                            {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
-                                                                            {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
+                                                            <div className="space-y-3 mt-4">
+                                                                {groupAndSortRoutes(editSession?.routes).map((heightGroup, hIdx) => (
+                                                                    <div key={hIdx}>
+                                                                        <h5 className="text-sm font-semibold text-slate-400 mb-2">{heightGroup.wallHeight} meter væg</h5>
+                                                                        <div className="space-y-1">
+                                                                            {heightGroup.routes.map((route) => (
+                                                                                <div
+                                                                                    key={route.originalIndex}
+                                                                                    className="flex items-center gap-2 rounded-lg p-2 text-sm mb-1 shadow border"
+                                                                                    style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
+                                                                                >
+                                                                                    <div className="flex-1">
+                                                                                        <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
+                                                                                        {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
+                                                                                        {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
+                                                                                        {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
+                                                                                    </div>
+                                                                                    <button
+                                                                                        onClick={() => removeEditRoute(route.originalIndex)}
+                                                                                        className="text-red-300 hover:text-red-200"
+                                                                                    >
+                                                                                        <Icon name="X" size={16} />
+                                                                                    </button>
+                                                                                </div>
+                                                                            ))}
                                                                         </div>
-                                                                        <button
-                                                                            onClick={() => removeEditRoute(i)}
-                                                                            className="text-red-300 hover:text-red-200"
-                                                                        >
-                                                                            <Icon name="X" size={16} />
-                                                                        </button>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -1102,22 +1185,27 @@
                                                                     </div>
                                                                 )}
                                                                 {session.routes && session.routes.length > 0 && (
-                                                                    <div>
+                                                                    <div className="space-y-3 mt-4">
                                                                         <h4 className="text-sm font-semibold text-slate-400 mb-2">Ruter</h4>
-                                                                        <div className="space-y-1">
-                                                                            {session.routes.map((route, j) => (
-                                                                                <div
-                                                                                    key={j}
-                                                                                    className="text-sm rounded-lg px-3 py-2 mb-1 shadow border"
-                                                                                    style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
-                                                                                >
-                                                                                    <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
-                                                                                    {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
-                                                                                    {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
-                                                                                    {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
+                                                                        {groupAndSortRoutes(session.routes).map((heightGroup, hIdx) => (
+                                                                            <div key={hIdx}>
+                                                                                <h5 className="text-sm font-semibold text-slate-400 mb-2">{heightGroup.wallHeight} meter væg</h5>
+                                                                                <div className="space-y-1">
+                                                                                    {heightGroup.routes.map((route, j) => (
+                                                                                        <div
+                                                                                            key={j}
+                                                                                            className="text-sm rounded-lg px-3 py-2 mb-1 shadow border"
+                                                                                            style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
+                                                                                        >
+                                                                                            <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
+                                                                                            {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
+                                                                                            {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
+                                                                                            {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
+                                                                                        </div>
+                                                                                    ))}
                                                                                 </div>
-                                                                            ))}
-                                                                        </div>
+                                                                            </div>
+                                                                        ))}
                                                                     </div>
                                                                 )}
                                                             </>
