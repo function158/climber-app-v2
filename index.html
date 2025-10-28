@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="da">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,13 +11,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
     <div id="root"></div>
     <script type="text/babel" data-presets="react,env">
         // Supabase config (din eksisterende)
         window.supabaseUrl = 'https://avhvihbhitupdmfbavry.supabase.co';
         window.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2aHZpaGJoaXR1cGRtZmJhdnJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4ODUzOTAsImV4cCI6MjA3NjQ2MTM5MH0.0r208gHMl8m3AvWemSR5e8Ok_Zbl0VRK7LdGeg2fb9s';
-        
+
         if (!window.supabase) {
             console.error('Supabase SDK kunne ikke indlæses. Tjek CDN-scriptet i <head>.');
         }
@@ -44,13 +46,13 @@
         // Parse duration to minutes
         const parseDuration = (duration) => {
             if (!duration) return 0;
-            
+
             const hoursMatch = duration.match(/(\d+)\s*(t|time|timer|h|hour|hours)/i);
             const minutesMatch = duration.match(/(\d+)\s*(m|min|minut|minutter|minutes?)/i);
-            
+
             const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
             const minutes = minutesMatch ? parseInt(minutesMatch[1]) : 0;
-            
+
             return hours * 60 + minutes;
         };
 
@@ -59,31 +61,31 @@
 
         // Farvemapping (kan placeres øverst blandt dine konstanter)
         const colorHexMap = {
-          'Grøn': '#2ecc40',
-          'Gul': '#f4d03f',
-          'Orange': '#e67e22',
-          'Blå': '#2980b9',
-          'Lilla': '#8e44ad',
-          'Rød': '#e74c3c',
-          'Sort': '#2d2d2d',
-          'Hvid': '#ecf0f1',
-          'Pink': '#fd5eaf'
+            'Grøn': '#2ecc40',
+            'Gul': '#f4d03f',
+            'Orange': '#e67e22',
+            'Blå': '#2980b9',
+            'Lilla': '#8e44ad',
+            'Rød': '#e74c3c',
+            'Sort': '#2d2d2d',
+            'Hvid': '#ecf0f1',
+            'Pink': '#fd5eaf'
         };
 
         // Farvemapping (øverst sammen med colorHexMap)
         function getGradient(color) {
-          switch(color) {
-            case 'Grøn':   return 'linear-gradient(90deg,#236c41 0%,#358356 100%)';
-            case 'Gul':    return 'linear-gradient(90deg,#9b8918 0%,#c3b12e 100%)';
-            case 'Orange': return 'linear-gradient(90deg,#a76112 0%,#d78f4a 100%)';
-            case 'Blå':    return 'linear-gradient(90deg,#20415e 0%,#4d759e 100%)';
-            case 'Lilla':  return 'linear-gradient(90deg,#57386d 0%,#8c6ab5 100%)';
-            case 'Rød':    return 'linear-gradient(90deg,#b03d2e 0%,#e06648 100%)';
-            case 'Sort':   return 'linear-gradient(90deg,#23272e 0%,#45484d 100%)';
-            case 'Hvid':   return 'linear-gradient(90deg,#f2f2f2 0%,#dedede 100%)';
-            case 'Pink':   return 'linear-gradient(90deg,#a42f8b 0%,#cf7cd8 100%)';
-            default:       return 'linear-gradient(90deg,#888 0%,#bbb 100%)';
-          }
+            switch (color) {
+                case 'Grøn': return 'linear-gradient(90deg,#236c41 0%,#358356 100%)';
+                case 'Gul': return 'linear-gradient(90deg,#9b8918 0%,#c3b12e 100%)';
+                case 'Orange': return 'linear-gradient(90deg,#a76112 0%,#d78f4a 100%)';
+                case 'Blå': return 'linear-gradient(90deg,#20415e 0%,#4d759e 100%)';
+                case 'Lilla': return 'linear-gradient(90deg,#57386d 0%,#8c6ab5 100%)';
+                case 'Rød': return 'linear-gradient(90deg,#b03d2e 0%,#e06648 100%)';
+                case 'Sort': return 'linear-gradient(90deg,#23272e 0%,#45484d 100%)';
+                case 'Hvid': return 'linear-gradient(90deg,#f2f2f2 0%,#dedede 100%)';
+                case 'Pink': return 'linear-gradient(90deg,#a42f8b 0%,#cf7cd8 100%)';
+                default: return 'linear-gradient(90deg,#888 0%,#bbb 100%)';
+            }
         }
 
         // Accordion med smooth height animation (bedste praksis)
@@ -129,7 +131,7 @@
             }, [open]);
 
             return (
-                <div ref={ref} style={{overflow:'hidden',height:open?'auto':'0px'}}>
+                <div ref={ref} style={{ overflow: 'hidden', height: open ? 'auto' : '0px' }}>
                     {rendered && <div>{children}</div>}
                 </div>
             );
@@ -137,145 +139,145 @@
 
         // ---------- LOGIN / APP WRAPPER (NY) ----------
         function LoginPage({ onLogin }) {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState(null);
-  const [showPopup, setShowPopup] = React.useState(false);
+            const [email, setEmail] = React.useState('');
+            const [password, setPassword] = React.useState('');
+            const [loading, setLoading] = React.useState(false);
+            const [error, setError] = React.useState(null);
+            const [showPopup, setShowPopup] = React.useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError(error.message);
-    } else {
-      onLogin(data.user);
-    }
-    setLoading(false);
-  };
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError(null);
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    setError(error.message);
+                } else {
+                    onLogin(data.user);
+                }
+                setLoading(false);
+            };
 
-  const handleSignup = async () => {
-    setLoading(true);
-    setError(null);
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      setError(error.message);
-    } else {
-      setShowPopup(true);
-    }
-    setLoading(false);
-  };
+            const handleSignup = async () => {
+                setLoading(true);
+                setError(null);
+                const { error } = await supabase.auth.signUp({ email, password });
+                if (error) {
+                    setError(error.message);
+                } else {
+                    setShowPopup(true);
+                }
+                setLoading(false);
+            };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      <div className="bg-slate-800 p-8 rounded-2xl shadow-lg w-full max-w-md relative">
-        <h1 className="text-2xl font-bold mb-6 text-center">Log ind på Climber.IO</h1>
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="w-full bg-slate-700 p-3 rounded-lg border border-slate-600 focus:border-blue-500"
-            required
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Adgangskode"
-            className="w-full bg-slate-700 p-3 rounded-lg border border-slate-600 focus:border-blue-500"
-            required
-          />
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-500 hover:bg-blue-600 py-3 rounded-lg font-semibold"
-          >
-            {loading ? 'Logger ind...' : 'Log ind'}
-          </button>
-          <button
-            onClick={handleSignup}
-            type="button"
-            disabled={loading}
-            className="w-full bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold mt-2"
-          >
-            Opret ny konto
-          </button>
-        </form>
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+                    <div className="bg-slate-800 p-8 rounded-2xl shadow-lg w-full max-w-md relative">
+                        <h1 className="text-2xl font-bold mb-6 text-center">Log ind på Climber.IO</h1>
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Email"
+                                className="w-full bg-slate-700 p-3 rounded-lg border border-slate-600 focus:border-blue-500"
+                                required
+                            />
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Adgangskode"
+                                className="w-full bg-slate-700 p-3 rounded-lg border border-slate-600 focus:border-blue-500"
+                                required
+                            />
+                            {error && <p className="text-red-400 text-sm">{error}</p>}
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-blue-500 hover:bg-blue-600 py-3 rounded-lg font-semibold"
+                            >
+                                {loading ? 'Logger ind...' : 'Log ind'}
+                            </button>
+                            <button
+                                onClick={handleSignup}
+                                type="button"
+                                disabled={loading}
+                                className="w-full bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold mt-2"
+                            >
+                                Opret ny konto
+                            </button>
+                        </form>
 
-        {/* Popup modal */}
-        {showPopup && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div className="bg-slate-800 p-8 rounded-2xl shadow-xl text-center w-80">
-              <h3 className="text-xl font-semibold mb-3 text-blue-400">
-                Bekræft din email
-              </h3>
-              <p className="text-slate-300 mb-6">
-                Tjek din indbakke for at bekræfte din konto, før du logger ind.
-              </p>
-              <button
-                onClick={() => setShowPopup(false)}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg"
-              >
-                Luk
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+                        {/* Popup modal */}
+                        {showPopup && (
+                            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                                <div className="bg-slate-800 p-8 rounded-2xl shadow-xl text-center w-80">
+                                    <h3 className="text-xl font-semibold mb-3 text-blue-400">
+                                        Bekræft din email
+                                    </h3>
+                                    <p className="text-slate-300 mb-6">
+                                        Tjek din indbakke for at bekræfte din konto, før du logger ind.
+                                    </p>
+                                    <button
+                                        onClick={() => setShowPopup(false)}
+                                        className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg"
+                                    >
+                                        Luk
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
 
 
-function App() {
-  const [user, setUser] = React.useState(null);
-  const [showWelcome, setShowWelcome] = React.useState(false);
+        function App() {
+            const [user, setUser] = React.useState(null);
+            const [showWelcome, setShowWelcome] = React.useState(false);
 
-  React.useEffect(() => {
-    // Tjek om der allerede findes en aktiv session
-    supabase.auth.getSession().then(({ data }) => {
-      const activeUser = data.session?.user || null;
-      setUser(activeUser);
+            React.useEffect(() => {
+                // Tjek om der allerede findes en aktiv session
+                supabase.auth.getSession().then(({ data }) => {
+                    const activeUser = data.session?.user || null;
+                    setUser(activeUser);
 
-      // Hvis en bruger er logget ind (fx efter bekræftelse)
-      if (activeUser) {
-        setShowWelcome(true);
-        setTimeout(() => setShowWelcome(false), 3000);
-      }
-    });
+                    // Hvis en bruger er logget ind (fx efter bekræftelse)
+                    if (activeUser) {
+                        setShowWelcome(true);
+                        setTimeout(() => setShowWelcome(false), 3000);
+                    }
+                });
 
-    // Lyt efter login/logout ændringer
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      if (session?.user) {
-        setShowWelcome(true);
-        setTimeout(() => setShowWelcome(false), 3000);
-      }
-    });
+                // Lyt efter login/logout ændringer
+                const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+                    setUser(session?.user || null);
+                    if (session?.user) {
+                        setShowWelcome(true);
+                        setTimeout(() => setShowWelcome(false), 3000);
+                    }
+                });
 
-    return () => {
-      listener.subscription?.unsubscribe();
-    };
-  }, []);
+                return () => {
+                    listener.subscription?.unsubscribe();
+                };
+            }, []);
 
-  if (!user) return <LoginPage onLogin={setUser} />;
+            if (!user) return <LoginPage onLogin={setUser} />;
 
-  return (
-    <>
-      <BoulderingTracker user={user} />
-      {showWelcome && (
-        <div className="fixed bottom-6 right-6 bg-blue-600 text-white px-4 py-3 rounded-xl shadow-lg animate-fade-in">
-          <p>Velkommen tilbage, {user.email} 👋</p>
-        </div>
-      )}
-    </>
-  );
-}
+            return (
+                <>
+                    <BoulderingTracker user={user} />
+                    {showWelcome && (
+                        <div className="fixed bottom-6 right-6 bg-blue-600 text-white px-4 py-3 rounded-xl shadow-lg animate-fade-in">
+                            <p>Velkommen tilbage, {user.email} 👋</p>
+                        </div>
+                    )}
+                </>
+            );
+        }
 
         // ---------- END LOGIN / APP WRAPPER ----------
 
@@ -319,7 +321,7 @@ function App() {
             };
 
             const colors = ['Grøn', 'Gul', 'Orange', 'Blå', 'Lilla', 'Rød', 'Sort', 'Hvid', 'Pink'];
-            
+
             // Almindelige klatre-øvelser
             const commonExercises = [
                 'Pull ups', 'Dips', 'Push ups', 'External rotation', 'Fingerstyrke', 'Plank'
@@ -393,7 +395,7 @@ function App() {
                         .select('*')
                         .eq('user_id', user.id)
                         .order('date', { ascending: false });
-                    
+
                     if (!error) {
                         setSessions(sortSessions(data));
                         // Udtræk unikke lokationer fra alle sessions
@@ -418,7 +420,7 @@ function App() {
                     updatedLocations = sortLocations([...locationsList, trimmedLocation]);
                     setLocationsList(updatedLocations);
                 }
-                
+
                 // Automatically select the newly added/existing location
                 if (isEditing) {
                     setEditSession(prev => ({ ...prev, location: trimmedLocation }));
@@ -663,7 +665,7 @@ function App() {
             const getStats = () => {
                 const now = new Date();
                 let startDate = new Date();
-                
+
                 // Set start date based on time period
                 if (timePeriod === 'week') {
                     startDate.setDate(now.getDate() - 7);
@@ -672,7 +674,7 @@ function App() {
                 } else if (timePeriod === 'year') {
                     startDate.setFullYear(now.getFullYear() - 1);
                 }
-                
+
                 const filteredSessions = sessions.filter(s => {
                     const sessionDate = new Date(s.date);
                     return sessionDate >= startDate;
@@ -686,14 +688,14 @@ function App() {
                 const colorCounts = {};
                 const dailyRoutes = {};
                 const dailyColors = {};
-                
+
                 filteredSessions.forEach(s => {
                     const sessionDate = new Date(s.date).toISOString().split('T')[0];
                     if (!dailyRoutes[sessionDate]) {
                         dailyRoutes[sessionDate] = 0;
                         dailyColors[sessionDate] = {};
                     }
-                    
+
                     if (s.routes && Array.isArray(s.routes)) {
                         s.routes.forEach(r => {
                             // Only count routes that don't have failure notes
@@ -744,56 +746,53 @@ function App() {
                         <div className="max-w-2xl mx-auto">
                             <header className="mb-8 pt-6 flex items-start justify-between">
                                 <div>
-                                  <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                                      Bouldering Tracker
-                                  </h1>
-                                  <p className="text-slate-400">
-                                    <div className="mt-3 flex gap-2">
-  <button
-    onClick={() => setTimePeriod('week')}
-    className={`px-3 py-1 rounded-lg text-sm font-medium border ${
-      timePeriod === 'week'
-        ? 'bg-blue-600 text-white border-blue-500'
-        : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
-    }`}
-  >
-    Uge
-  </button>
-  <button
-    onClick={() => setTimePeriod('month')}
-    className={`px-3 py-1 rounded-lg text-sm font-medium border ${
-      timePeriod === 'month'
-        ? 'bg-blue-600 text-white border-blue-500'
-        : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
-    }`}
-  >
-    Måned
-  </button>
-  <button
-    onClick={() => setTimePeriod('year')}
-    className={`px-3 py-1 rounded-lg text-sm font-medium border ${
-      timePeriod === 'year'
-        ? 'bg-blue-600 text-white border-blue-500'
-        : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
-    }`}
-  >
-    År
-  </button>
-</div>
+                                    <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                                        Bouldering Tracker
+                                    </h1>
+                                    <p className="text-slate-400">
+                                        <div className="mt-3 flex gap-2">
+                                            <button
+                                                onClick={() => setTimePeriod('week')}
+                                                className={`px-3 py-1 rounded-lg text-sm font-medium border ${timePeriod === 'week'
+                                                    ? 'bg-blue-600 text-white border-blue-500'
+                                                    : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
+                                                    }`}
+                                            >
+                                                Uge
+                                            </button>
+                                            <button
+                                                onClick={() => setTimePeriod('month')}
+                                                className={`px-3 py-1 rounded-lg text-sm font-medium border ${timePeriod === 'month'
+                                                    ? 'bg-blue-600 text-white border-blue-500'
+                                                    : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
+                                                    }`}
+                                            >
+                                                Måned
+                                            </button>
+                                            <button
+                                                onClick={() => setTimePeriod('year')}
+                                                className={`px-3 py-1 rounded-lg text-sm font-medium border ${timePeriod === 'year'
+                                                    ? 'bg-blue-600 text-white border-blue-500'
+                                                    : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
+                                                    }`}
+                                            >
+                                                År
+                                            </button>
+                                        </div>
 
-                                      {timePeriod === 'week' ? 'Denne uge' : 
-                                       timePeriod === 'month' ? 'Sidste måned' : 'Sidste år'}
-                                  </p>
+                                        {timePeriod === 'week' ? 'Denne uge' :
+                                            timePeriod === 'month' ? 'Sidste måned' : 'Sidste år'}
+                                    </p>
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
-                                  <div className="text-sm text-slate-300">Logget ind som</div>
-                                  <div className="text-sm font-medium">{user.email}</div>
-                                  <button
-                                    onClick={async () => { await supabase.auth.signOut(); }}
-                                    className="mt-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm"
-                                  >
-                                    Log ud
-                                  </button>
+                                    <div className="text-sm text-slate-300">Logget ind som</div>
+                                    <div className="text-sm font-medium">{user.email}</div>
+                                    <button
+                                        onClick={async () => { await supabase.auth.signOut(); }}
+                                        className="mt-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm"
+                                    >
+                                        Log ud
+                                    </button>
                                 </div>
                             </header>
                             {/* Resten af home UI er uændret */}
@@ -809,7 +808,7 @@ function App() {
                                             {stats.totalMinutes}m
                                         </div>
                                     </div>
-                                    
+
                                     <div className="bg-slate-700/50 rounded-xl p-4">
                                         <div className="flex items-center gap-2 text-slate-400 mb-1">
                                             <Icon name="TrendingUp" size={18} />
@@ -903,8 +902,8 @@ function App() {
                                 ) : (
                                     <div className="text-center text-slate-400 py-8">
                                         {timePeriod === 'week' ? 'Ingen boulders denne uge endnu! 💪' :
-                                         timePeriod === 'month' ? 'Ingen boulders denne måned endnu! 💪' :
-                                         'Ingen boulders dette år endnu! 💪'}
+                                            timePeriod === 'month' ? 'Ingen boulders denne måned endnu! 💪' :
+                                                'Ingen boulders dette år endnu! 💪'}
                                     </div>
                                 )}
                             </div>
@@ -956,14 +955,14 @@ function App() {
                                 <p className="text-slate-400">Alle dine klatring sessioner</p>
                             </div>
                             <div className="flex flex-col items-end">
-                              <div className="text-sm text-slate-300">Logget ind som</div>
-                              <div className="text-sm font-medium">{user.email}</div>
-                              <button
-                                onClick={async () => { await supabase.auth.signOut(); }}
-                                className="mt-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm"
-                              >
-                                Log ud
-                              </button>
+                                <div className="text-sm text-slate-300">Logget ind som</div>
+                                <div className="text-sm font-medium">{user.email}</div>
+                                <button
+                                    onClick={async () => { await supabase.auth.signOut(); }}
+                                    className="mt-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm"
+                                >
+                                    Log ud
+                                </button>
                             </div>
                         </header>
 
@@ -983,14 +982,14 @@ function App() {
                         {showNewSession && (
                             <div className="bg-slate-800/50 backdrop-blur rounded-2xl p-6 mb-6 border border-slate-700">
                                 <h2 className="text-2xl font-bold mb-4">Ny Session</h2>
-                                
+
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm text-slate-400 mb-2">Dato</label>
                                         <input
                                             type="date"
                                             value={currentSession.date}
-                                            onChange={(e) => setCurrentSession({...currentSession, date: e.target.value})}
+                                            onChange={(e) => setCurrentSession({ ...currentSession, date: e.target.value })}
                                             className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                         />
                                     </div>
@@ -1002,7 +1001,7 @@ function App() {
                                                 <select
                                                     value={currentSession.location}
                                                     onChange={(e) => {
-                                                        setCurrentSession({...currentSession, location: e.target.value});
+                                                        setCurrentSession({ ...currentSession, location: e.target.value });
                                                         setShowManualLocationInput(false); // Hide manual input if an option is selected
                                                     }}
                                                     className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
@@ -1019,7 +1018,7 @@ function App() {
                                                     <input
                                                         type="text"
                                                         value={currentSession.location}
-                                                        onChange={(e) => setCurrentSession({...currentSession, location: e.target.value})}
+                                                        onChange={(e) => setCurrentSession({ ...currentSession, location: e.target.value })}
                                                         onKeyPress={(e) => e.key === 'Enter' && addLocationToList(currentSession.location)}
                                                         placeholder="Skriv lokation"
                                                         className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
@@ -1061,7 +1060,7 @@ function App() {
                                         <input
                                             type="text"
                                             value={currentSession.duration}
-                                            onChange={(e) => setCurrentSession({...currentSession, duration: e.target.value})}
+                                            onChange={(e) => setCurrentSession({ ...currentSession, duration: e.target.value })}
                                             placeholder="f.eks. 1 time 50 min eller 30 min"
                                             className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                         />
@@ -1069,7 +1068,7 @@ function App() {
 
                                     <div>
                                         <label className="block text-sm text-slate-400 mb-2">Øvelser</label>
-                                        
+
                                         {/* Øvelses-knapper */}
                                         <div className="mb-4">
                                             <div className="mb-3">
@@ -1081,23 +1080,22 @@ function App() {
                                                     className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                 />
                                             </div>
-                                            
+
                                             <div className="grid grid-cols-2 gap-2 mb-3">
                                                 {commonExercises.map((exercise) => (
                                                     <button
                                                         key={exercise}
                                                         onClick={() => setSelectedExercise(exercise)}
-                                                        className={`p-2 rounded-lg text-sm font-medium transition-all ${
-                                                            selectedExercise === exercise
-                                                                ? 'bg-blue-500 text-white'
-                                                                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                                                        }`}
+                                                        className={`p-2 rounded-lg text-sm font-medium transition-all ${selectedExercise === exercise
+                                                            ? 'bg-blue-500 text-white'
+                                                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                                            }`}
                                                     >
                                                         {exercise}
                                                     </button>
                                                 ))}
                                             </div>
-                                            
+
                                             {selectedExercise && exerciseReps && (
                                                 <div className="mb-3">
                                                     <button
@@ -1128,7 +1126,7 @@ function App() {
                                                 <Icon name="Plus" size={20} />
                                             </button>
                                         </div>
-                                        
+
                                         {currentSession.exercises.map((ex, i) => (
                                             <div key={i} className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2 mb-1 text-sm">
                                                 <span className="flex-1">{ex}</span>
@@ -1140,28 +1138,28 @@ function App() {
                                     {/* NEW: Wall Height for route, moved here */}
                                     <div className="pt-2">
 
-  {showHeightSelector ? (
-    <select
-      value={newRoute.wallHeight}
-      onChange={(e) => {
-        setNewRoute({ ...newRoute, wallHeight: e.target.value });
-        setShowHeightSelector(false); // Luk dropdown når valgt
-      }}
-      className="bg-slate-800 text-slate-300 rounded-md p-2 text-sm border border-slate-700 focus:border-slate-500 focus:outline-none"
-    >
-      <option value="5">5 meter</option>
-      <option value="7">7 meter</option>
-      <option value="10">10 meter</option>
-    </select>
-  ) : (
-    <button
-      onClick={() => setShowHeightSelector(true)}
-      className="text-slate-400 text-sm hover:text-slate-200 underline"
-    >
-      Ændr væghøjde (nu: {newRoute.wallHeight}m)
-    </button>
-  )}
-</div>
+                                        {showHeightSelector ? (
+                                            <select
+                                                value={newRoute.wallHeight}
+                                                onChange={(e) => {
+                                                    setNewRoute({ ...newRoute, wallHeight: e.target.value });
+                                                    setShowHeightSelector(false); // Luk dropdown når valgt
+                                                }}
+                                                className="bg-slate-800 text-slate-300 rounded-md p-2 text-sm border border-slate-700 focus:border-slate-500 focus:outline-none"
+                                            >
+                                                <option value="5">5 meter</option>
+                                                <option value="7">7 meter</option>
+                                                <option value="10">10 meter</option>
+                                            </select>
+                                        ) : (
+                                            <button
+                                                onClick={() => setShowHeightSelector(true)}
+                                                className="text-slate-400 text-sm hover:text-slate-200 underline"
+                                            >
+                                                Ændr væghøjde (nu: {newRoute.wallHeight}m)
+                                            </button>
+                                        )}
+                                    </div>
 
                                     {/* END NEW */}
 
@@ -1172,12 +1170,11 @@ function App() {
                                                 {colors.map(c => (
                                                     <button
                                                         key={c}
-                                                        onClick={() => setNewRoute({...newRoute, color: c})}
-                                                        className={`p-3 rounded-lg font-medium text-sm transition-all border-2 ${
-                                                            newRoute.color === c
-                                                                ? 'border-white shadow-lg scale-105'
-                                                                : 'border-transparent opacity-80 hover:opacity-100'
-                                                        }`}
+                                                        onClick={() => setNewRoute({ ...newRoute, color: c })}
+                                                        className={`p-3 rounded-lg font-medium text-sm transition-all border-2 ${newRoute.color === c
+                                                            ? 'border-white shadow-lg scale-105'
+                                                            : 'border-transparent opacity-80 hover:opacity-100'
+                                                            }`}
                                                         style={{
                                                             background: getGradient(c),
                                                             color: c === 'Hvid' ? '#232323' : '#fff'
@@ -1187,32 +1184,32 @@ function App() {
                                                     </button>
                                                 ))}
                                             </div>
-                                            
+
                                             <div className="flex gap-2">
                                                 <input
                                                     type="text"
                                                     value={newRoute.number}
-                                                    onChange={(e) => setNewRoute({...newRoute, number: e.target.value})}
+                                                    onChange={(e) => setNewRoute({ ...newRoute, number: e.target.value })}
                                                     placeholder="Nummer (valgfrit)"
                                                     className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                 />
                                                 <input
                                                     type="number"
                                                     value={newRoute.attempts}
-                                                    onChange={(e) => setNewRoute({...newRoute, attempts: e.target.value})}
+                                                    onChange={(e) => setNewRoute({ ...newRoute, attempts: e.target.value })}
                                                     placeholder="Forsøg"
                                                     className="w-24 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                 />
                                             </div>
-                                            
+
                                             <input
                                                 type="text"
                                                 value={newRoute.note}
-                                                onChange={(e) => setNewRoute({...newRoute, note: e.target.value})}
+                                                onChange={(e) => setNewRoute({ ...newRoute, note: e.target.value })}
                                                 placeholder="Note (f.eks. 'Fejl - ikke nok fingerstyrke')"
                                                 className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                             />
-                                            
+
                                             {newRoute.color && newRoute.wallHeight && (
                                                 <button
                                                     onClick={addRoute}
@@ -1223,7 +1220,7 @@ function App() {
                                                 </button>
                                             )}
                                         </div>
-                                        
+
                                         <div className="space-y-3 mt-4">
                                             {groupAndSortRoutes(currentSession.routes).map((heightGroup, hIdx) => (
                                                 <div key={hIdx}>
@@ -1235,10 +1232,10 @@ function App() {
                                                                 className="rounded-lg p-2 text-sm mb-1 flex items-center shadow border"
                                                                 style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
                                                             >
-                                                                <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
-                                                                {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
-                                                                {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
-                                                                {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
+                                                                <span className="font-semibold" style={{ fontSize: '1em', fontWeight: '500' }}>{route.color}</span>
+                                                                {route.number && <span style={{ marginLeft: '0.4em' }}>#{route.number}</span>}
+                                                                {route.attempts && <span className="text-slate-200/85" style={{ marginLeft: '0.5em' }}> ({route.attempts})</span>}
+                                                                {route.note && <span className="text-orange-200/95" style={{ marginLeft: '0.5em' }}> - {route.note}</span>}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -1368,7 +1365,7 @@ function App() {
 
                                                         <div>
                                                             <label className="block text-sm text-slate-400 mb-2">Øvelser</label>
-                                                            
+
                                                             {/* Øvelses-knapper */}
                                                             <div className="mb-4">
                                                                 <div className="mb-3">
@@ -1380,23 +1377,22 @@ function App() {
                                                                         className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                                     />
                                                                 </div>
-                                                                
+
                                                                 <div className="grid grid-cols-2 gap-2 mb-3">
                                                                     {commonExercises.map((exercise) => (
                                                                         <button
                                                                             key={exercise}
                                                                             onClick={() => setSelectedExercise(exercise)}
-                                                                            className={`p-2 rounded-lg text-sm font-medium transition-all ${
-                                                                                selectedExercise === exercise
-                                                                                    ? 'bg-blue-500 text-white'
-                                                                                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                                                                            }`}
+                                                                            className={`p-2 rounded-lg text-sm font-medium transition-all ${selectedExercise === exercise
+                                                                                ? 'bg-blue-500 text-white'
+                                                                                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                                                                }`}
                                                                         >
                                                                             {exercise}
                                                                         </button>
                                                                     ))}
                                                                 </div>
-                                                                
+
                                                                 {selectedExercise && exerciseReps && (
                                                                     <div className="mb-3">
                                                                         <button
@@ -1427,7 +1423,7 @@ function App() {
                                                                     <Icon name="Plus" size={20} />
                                                                 </button>
                                                             </div>
-                                                            
+
                                                             {editSession?.exercises?.map((ex, i) => (
                                                                 <div key={i} className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2 mb-1 text-sm">
                                                                     <span className="flex-1">{ex}</span>
@@ -1446,7 +1442,7 @@ function App() {
                                                             <label className="block text-sm text-slate-400 mb-2">Væghøjde for nye ruter</label>
                                                             <select
                                                                 value={newRoute.wallHeight}
-                                                                onChange={(e) => setNewRoute({...newRoute, wallHeight: e.target.value})}
+                                                                onChange={(e) => setNewRoute({ ...newRoute, wallHeight: e.target.value })}
                                                                 className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                             >
                                                                 <option value="5">5 meter</option>
@@ -1461,38 +1457,38 @@ function App() {
                                                             <div className="space-y-2 mb-2">
                                                                 <select
                                                                     value={newRoute.color}
-                                                                    onChange={(e) => setNewRoute({...newRoute, color: e.target.value})}
+                                                                    onChange={(e) => setNewRoute({ ...newRoute, color: e.target.value })}
                                                                     className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                                 >
                                                                     <option value="">Vælg farve</option>
                                                                     {colors.map(c => <option key={c} value={c}>{c}</option>)}
                                                                 </select>
-                                                                
+
                                                                 <div className="flex gap-2">
                                                                     <input
                                                                         type="text"
                                                                         value={newRoute.number}
-                                                                        onChange={(e) => setNewRoute({...newRoute, number: e.target.value})}
+                                                                        onChange={(e) => setNewRoute({ ...newRoute, number: e.target.value })}
                                                                         placeholder="Nummer (valgfrit)"
                                                                         className="flex-1 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                                     />
                                                                     <input
                                                                         type="number"
                                                                         value={newRoute.attempts}
-                                                                        onChange={(e) => setNewRoute({...newRoute, attempts: e.target.value})}
+                                                                        onChange={(e) => setNewRoute({ ...newRoute, attempts: e.target.value })}
                                                                         placeholder="Forsøg"
                                                                         className="w-24 bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                                     />
                                                                 </div>
-                                                                
+
                                                                 <input
                                                                     type="text"
                                                                     value={newRoute.note}
-                                                                    onChange={(e) => setNewRoute({...newRoute, note: e.target.value})}
+                                                                    onChange={(e) => setNewRoute({ ...newRoute, note: e.target.value })}
                                                                     placeholder="Note (f.eks. 'Fejl - ikke nok fingerstyrke')"
                                                                     className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
                                                                 />
-                                                                
+
                                                                 {newRoute.color && newRoute.wallHeight && (
                                                                     <button
                                                                         onClick={addEditRoute}
@@ -1503,7 +1499,7 @@ function App() {
                                                                     </button>
                                                                 )}
                                                             </div>
-                                                            
+
                                                             <div className="space-y-3 mt-4">
                                                                 {groupAndSortRoutes(editSession?.routes).map((heightGroup, hIdx) => (
                                                                     <div key={hIdx}>
@@ -1516,10 +1512,10 @@ function App() {
                                                                                     style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
                                                                                 >
                                                                                     <div className="flex-1">
-                                                                                        <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
-                                                                                        {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
-                                                                                        {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
-                                                                                        {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
+                                                                                        <span className="font-semibold" style={{ fontSize: '1em', fontWeight: '500' }}>{route.color}</span>
+                                                                                        {route.number && <span style={{ marginLeft: '0.4em' }}>#{route.number}</span>}
+                                                                                        {route.attempts && <span className="text-slate-200/85" style={{ marginLeft: '0.5em' }}> ({route.attempts})</span>}
+                                                                                        {route.note && <span className="text-orange-200/95" style={{ marginLeft: '0.5em' }}> - {route.note}</span>}
                                                                                     </div>
                                                                                     <button
                                                                                         onClick={() => removeEditRoute(route.originalIndex)}
@@ -1581,7 +1577,7 @@ function App() {
                                                                     )}
                                                                     <span className="ml-4 text-2xl text-blue-200">{openSessionIds.includes(session.id) ? '−' : '+'}</span>
                                                                     {session.id && (
-                                                                        <button type="button" onClick={e => {e.stopPropagation(); startEditSession(session)}} className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200" title="Rediger">
+                                                                        <button type="button" onClick={e => { e.stopPropagation(); startEditSession(session) }} className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200" title="Rediger">
                                                                             <Icon name="Edit" size={18} />
                                                                         </button>
                                                                     )}
@@ -1613,10 +1609,10 @@ function App() {
                                                                                             className="text-sm rounded-lg px-3 py-2 mb-1 shadow border"
                                                                                             style={{ background: getGradient(route.color), color: route.color === 'Hvid' ? '#232323' : '#fff', border: '1px solid rgba(30,30,40,0.14)', boxShadow: '0 1.5px 6px 0 rgba(20,20,36,0.11)', fontWeight: 500 }}
                                                                                         >
-                                                                                            <span className="font-semibold" style={{fontSize: '1em', fontWeight:'500'}}>{route.color}</span>
-                                                                                            {route.number && <span style={{marginLeft:'0.4em'}}>#{route.number}</span>}
-                                                                                            {route.attempts && <span className="text-slate-200/85" style={{marginLeft:'0.5em'}}> ({route.attempts})</span>}
-                                                                                            {route.note && <span className="text-orange-200/95" style={{marginLeft:'0.5em'}}> - {route.note}</span>}
+                                                                                            <span className="font-semibold" style={{ fontSize: '1em', fontWeight: '500' }}>{route.color}</span>
+                                                                                            {route.number && <span style={{ marginLeft: '0.4em' }}>#{route.number}</span>}
+                                                                                            {route.attempts && <span className="text-slate-200/85" style={{ marginLeft: '0.5em' }}> ({route.attempts})</span>}
+                                                                                            {route.note && <span className="text-orange-200/95" style={{ marginLeft: '0.5em' }}> - {route.note}</span>}
                                                                                         </div>
                                                                                     ))}
                                                                                 </div>
@@ -1664,4 +1660,5 @@ function App() {
         root.render(<App />);
     </script>
 </body>
+
 </html>
