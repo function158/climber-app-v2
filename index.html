@@ -301,6 +301,8 @@ function App() {
             const [editingSessionId, setEditingSessionId] = useState(null);
             const [editSession, setEditSession] = useState(null);
             const [updating, setUpdating] = useState(false);
+            const [showHeightSelector, setShowHeightSelector] = useState(false);
+
 
             // New state for locations feature
             const [locationsList, setLocationsList] = useState([]); // To store unique locations
@@ -1103,18 +1105,31 @@ function App() {
                                     </div>
 
                                     {/* NEW: Wall Height for route, moved here */}
-                                    <div className="pt-2"> {/* Added padding top for spacing */}
-                                        <label className="block text-sm text-slate-400 mb-2">Væghøjde for nye ruter</label>
-                                        <select
-                                            value={newRoute.wallHeight}
-                                            onChange={(e) => setNewRoute({...newRoute, wallHeight: e.target.value})}
-                                            className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                                        >
-                                            <option value="5">5 meter</option>
-                                            <option value="7">7 meter</option>
-                                            <option value="10">10 meter</option>
-                                        </select>
-                                    </div>
+                                    <div className="pt-2">
+
+  {showHeightSelector ? (
+    <select
+      value={newRoute.wallHeight}
+      onChange={(e) => {
+        setNewRoute({ ...newRoute, wallHeight: e.target.value });
+        setShowHeightSelector(false); // Luk dropdown når valgt
+      }}
+      className="bg-slate-800 text-slate-300 rounded-md p-2 text-sm border border-slate-700 focus:border-slate-500 focus:outline-none"
+    >
+      <option value="5">5 meter</option>
+      <option value="7">7 meter</option>
+      <option value="10">10 meter</option>
+    </select>
+  ) : (
+    <button
+      onClick={() => setShowHeightSelector(true)}
+      className="text-slate-400 text-sm hover:text-slate-200 underline"
+    >
+      Ændr væghøjde (nu: {newRoute.wallHeight}m)
+    </button>
+  )}
+</div>
+
                                     {/* END NEW */}
 
                                     <div>
