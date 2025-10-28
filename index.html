@@ -13,7 +13,7 @@
 <body>
     <div id="root"></div>
     <script type="text/babel" data-presets="react,env">
-        // Supabase config
+        // Supabase config (din eksisterende)
         window.supabaseUrl = 'https://avhvihbhitupdmfbavry.supabase.co';
         window.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2aHZpaGJoaXR1cGRtZmJhdnJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4ODUzOTAsImV4cCI6MjA3NjQ2MTM5MH0.0r208gHMl8m3AvWemSR5e8Ok_Zbl0VRK7LdGeg2fb9s';
         
@@ -135,7 +135,97 @@
             );
         }
 
-        const BoulderingTracker = () => {
+        // ---------- LOGIN / APP WRAPPER (NY) ----------
+        function LoginPage({ onLogin }) {
+          const [email, setEmail] = useState('');
+          const [password, setPassword] = useState('');
+          const [loading, setLoading] = useState(false);
+          const [error, setError] = useState(null);
+
+          const handleLogin = async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            setError(null);
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+              setError(error.message);
+            } else {
+              onLogin(data.user);
+            }
+            setLoading(false);
+          };
+
+          const handleSignup = async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            setError(null);
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            if (error) {
+              setError(error.message);
+            } else {
+              alert('Kontoen er oprettet — tjek din e-mail for bekræftelse hvis aktiveret i Supabase.');
+            }
+            setLoading(false);
+          };
+
+          return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-4">
+              <div className="max-w-md w-full bg-slate-800/70 backdrop-blur rounded-2xl p-6 border border-slate-700">
+                <h2 className="text-2xl font-bold mb-4 text-center">Log ind / Opret konto</h2>
+                <form onSubmit={handleLogin} className="space-y-3">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email"
+                    required
+                    className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500"
+                  />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Adgangskode"
+                    required
+                    className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500"
+                  />
+                  {error && <div className="text-red-400 text-sm">{error}</div>}
+                  <button type="submit" disabled={loading} className="w-full bg-blue-500 hover:bg-blue-600 py-3 rounded-lg font-semibold">
+                    {loading ? 'Logger ind...' : 'Log ind'}
+                  </button>
+                  <button type="button" onClick={handleSignup} disabled={loading} className="w-full bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold">
+                    Opret ny konto
+                  </button>
+                </form>
+              </div>
+            </div>
+          );
+        }
+
+        function App() {
+          const [user, setUser] = useState(null);
+
+          useEffect(() => {
+            // initial session
+            supabase.auth.getSession().then(({ data }) => {
+              setUser(data.session?.user || null);
+            });
+
+            // auth state changes
+            const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+              setUser(session?.user || null);
+            });
+
+            return () => listener.subscription?.unsubscribe();
+          }, []);
+
+          if (!user) return <LoginPage onLogin={setUser} />;
+          return <BoulderingTracker user={user} />;
+        }
+        // ---------- END LOGIN / APP WRAPPER ----------
+
+        // ---------- BoulderingTracker (modificeret til at tage `user` prop) ----------
+        const BoulderingTracker = ({ user }) => {
             const [currentPage, setCurrentPage] = useState('home');
             const [sessions, setSessions] = useState([]);
             const [showNewSession, setShowNewSession] = useState(false);
@@ -179,8 +269,14 @@
             ];
 
             useEffect(() => {
-                loadSessions();
-            }, []);
+                // Load sessions whenever user changes (ensures we only load data for logged in user)
+                if (user) {
+                    loadSessions();
+                } else {
+                    setSessions([]);
+                    setLoading(false);
+                }
+            }, [user]);
 
             // Helper to group and sort routes by wall height
             const groupAndSortRoutes = (routes) => {
@@ -232,30 +328,32 @@
             };
 
             const loadSessions = async () => {
-    setLoading(true);
-    try {
-        const { data, error } = await supabase
-            .from('sessions')
-            .select('*')
-            .order('date', { ascending: false });
-        
-        if (!error) {
-            setSessions(sortSessions(data));
-            // Udtræk unikke lokationer fra alle sessions
-            const uniqueLocations = [...new Set(data.map(s => s.location).filter(Boolean))];
-            setLocationsList(sortLocations(uniqueLocations));
-        } else {
-            console.error('Error loading sessions:', error);
-        }
-    } catch (error) {
-        console.error('Error loading sessions:', error);
-    }
-    setLoading(false);
-};
+                setLoading(true);
+                try {
+                    // Hent kun sessions for den loggede bruger
+                    const { data, error } = await supabase
+                        .from('sessions')
+                        .select('*')
+                        .eq('user_id', user.id)
+                        .order('date', { ascending: false });
+                    
+                    if (!error) {
+                        setSessions(sortSessions(data));
+                        // Udtræk unikke lokationer fra alle sessions
+                        const uniqueLocations = [...new Set((data || []).map(s => s.location).filter(Boolean))];
+                        setLocationsList(sortLocations(uniqueLocations));
+                    } else {
+                        console.error('Error loading sessions:', error);
+                    }
+                } catch (error) {
+                    console.error('Error loading sessions:', error);
+                }
+                setLoading(false);
+            };
 
             // Handler to add a location to the locationsList (for future selection)
             const addLocationToList = (locationName, isEditing = false) => {
-                const trimmedLocation = locationName.trim();
+                const trimmedLocation = (locationName || '').trim();
                 if (!trimmedLocation) return; // Don't add empty locations
 
                 let updatedLocations = locationsList;
@@ -307,13 +405,14 @@
             };
 
             const saveSession = async () => {
+                if (!user) { alert('Du skal være logget ind for at gemme sessioner.'); return; }
                 if (currentSession.location && currentSession.duration) {
                     setSaving(true);
                     addLocationToList(currentSession.location); // Add current location to list if new
                     try {
                         const { data: inserted, error } = await supabase
                             .from('sessions')
-                            .insert({ ...currentSession })
+                            .insert({ ...currentSession, user_id: user.id })
                             .select()
                             .single();
 
@@ -343,12 +442,13 @@
             };
 
             const saveDraftSession = async () => {
+                if (!user) { alert('Du skal være logget ind for at gemme sessioner.'); return; }
                 setSaving(true);
                 addLocationToList(currentSession.location); // Add current location to list if new
                 try {
                     const { data: inserted, error } = await supabase
                         .from('sessions')
-                        .insert({ ...currentSession })
+                        .insert({ ...currentSession, user_id: user.id })
                         .select()
                         .single();
 
@@ -424,6 +524,7 @@
 
             const updateSession = async () => {
                 if (!editingSessionId || !editSession) return;
+                if (!user) { alert('Du skal være logget ind for at opdatere sessioner.'); return; }
                 setUpdating(true);
                 addLocationToList(editSession.location); // Add current location to list if new
                 try {
@@ -434,7 +535,8 @@
                             location: editSession.location,
                             duration: editSession.duration,
                             exercises: editSession.exercises,
-                            routes: editSession.routes
+                            routes: editSession.routes,
+                            user_id: user.id // ensure ownership preserved
                         })
                         .eq('id', editingSessionId)
                         .select()
@@ -583,50 +685,28 @@
                 return (
                     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-4 pb-24">
                         <div className="max-w-2xl mx-auto">
-                            <header className="mb-8 pt-6">
-                                <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                                    Bouldering Tracker
-                                </h1>
-                                <div className="flex items-center justify-between">
-                                    <p className="text-slate-400">
-                                        {timePeriod === 'week' ? 'Denne uge' : 
-                                         timePeriod === 'month' ? 'Sidste måned' : 'Sidste år'}
-                                    </p>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => setTimePeriod('week')}
-                                            className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                                                timePeriod === 'week' 
-                                                    ? 'bg-blue-500 text-white' 
-                                                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                                            }`}
-                                        >
-                                            1 uge
-                                        </button>
-                                        <button
-                                            onClick={() => setTimePeriod('month')}
-                                            className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                                                timePeriod === 'month' 
-                                                    ? 'bg-blue-500 text-white' 
-                                                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                                            }`}
-                                        >
-                                            1 måned
-                                        </button>
-                                        <button
-                                            onClick={() => setTimePeriod('year')}
-                                            className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                                                timePeriod === 'year' 
-                                                    ? 'bg-blue-500 text-white' 
-                                                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                                            }`}
-                                        >
-                                            1 år
-                                        </button>
-                                    </div>
+                            <header className="mb-8 pt-6 flex items-start justify-between">
+                                <div>
+                                  <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                                      Bouldering Tracker
+                                  </h1>
+                                  <p className="text-slate-400">
+                                      {timePeriod === 'week' ? 'Denne uge' : 
+                                       timePeriod === 'month' ? 'Sidste måned' : 'Sidste år'}
+                                  </p>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                  <div className="text-sm text-slate-300">Logget ind som</div>
+                                  <div className="text-sm font-medium">{user.email}</div>
+                                  <button
+                                    onClick={async () => { await supabase.auth.signOut(); }}
+                                    className="mt-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm"
+                                  >
+                                    Log ud
+                                  </button>
                                 </div>
                             </header>
-
+                            {/* Resten af home UI er uændret */}
                             <div className="bg-slate-800/50 backdrop-blur rounded-2xl p-6 mb-6 border border-slate-700">
                                 <div className="grid grid-cols-2 gap-4 mb-6">
                                     <div className="bg-slate-700/50 rounded-xl p-4">
@@ -780,9 +860,21 @@
             return (
                 <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-4 pb-24">
                     <div className="max-w-2xl mx-auto">
-                        <header className="mb-6 pt-6">
-                            <h1 className="text-3xl font-bold mb-2">Sessioner</h1>
-                            <p className="text-slate-400">Alle dine klatring sessioner</p>
+                        <header className="mb-6 pt-6 flex items-center justify-between">
+                            <div>
+                                <h1 className="text-3xl font-bold mb-2">Sessioner</h1>
+                                <p className="text-slate-400">Alle dine klatring sessioner</p>
+                            </div>
+                            <div className="flex flex-col items-end">
+                              <div className="text-sm text-slate-300">Logget ind som</div>
+                              <div className="text-sm font-medium">{user.email}</div>
+                              <button
+                                onClick={async () => { await supabase.auth.signOut(); }}
+                                className="mt-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm"
+                              >
+                                Log ud
+                              </button>
+                            </div>
                         </header>
 
                         {!showNewSession && (
@@ -854,8 +946,6 @@
                                                         <button
                                                             onClick={() => {
                                                                 setShowManualLocationInput(false);
-                                                                // Optionally reset currentSession.location if user cancels manual input
-                                                                // setCurrentSession(prev => ({ ...prev, location: '' }));
                                                             }}
                                                             className="bg-slate-700 hover:bg-slate-600 px-4 rounded-lg text-slate-300"
                                                             title="Annuller manuel indtastning"
@@ -1144,8 +1234,6 @@
                                                                             <button
                                                                                 onClick={() => {
                                                                                     setShowManualLocationInput(false);
-                                                                                    // Optionally reset editSession.location if user cancels manual input
-                                                                                    // setEditSession(prev => ({ ...prev, location: '' }));
                                                                                 }}
                                                                                 className="bg-slate-700 hover:bg-slate-600 px-4 rounded-lg text-slate-300"
                                                                                 title="Annuller manuel indtastning"
@@ -1466,9 +1554,11 @@
                 </div>
             );
         };
+        // ---------- END BoulderingTracker ----------
 
+        // RENDER APP (brug App wrapper som håndterer auth)
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<BoulderingTracker />);
+        root.render(<App />);
     </script>
 </body>
 </html>
