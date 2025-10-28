@@ -748,6 +748,39 @@ function App() {
                                       Bouldering Tracker
                                   </h1>
                                   <p className="text-slate-400">
+                                    <div className="mt-3 flex gap-2">
+  <button
+    onClick={() => setTimePeriod('week')}
+    className={`px-3 py-1 rounded-lg text-sm font-medium border ${
+      timePeriod === 'week'
+        ? 'bg-blue-600 text-white border-blue-500'
+        : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
+    }`}
+  >
+    Uge
+  </button>
+  <button
+    onClick={() => setTimePeriod('month')}
+    className={`px-3 py-1 rounded-lg text-sm font-medium border ${
+      timePeriod === 'month'
+        ? 'bg-blue-600 text-white border-blue-500'
+        : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
+    }`}
+  >
+    Måned
+  </button>
+  <button
+    onClick={() => setTimePeriod('year')}
+    className={`px-3 py-1 rounded-lg text-sm font-medium border ${
+      timePeriod === 'year'
+        ? 'bg-blue-600 text-white border-blue-500'
+        : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
+    }`}
+  >
+    År
+  </button>
+</div>
+
                                       {timePeriod === 'week' ? 'Denne uge' : 
                                        timePeriod === 'month' ? 'Sidste måned' : 'Sidste år'}
                                   </p>
