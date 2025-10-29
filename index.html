@@ -278,7 +278,6 @@
                 </>
             );
         }
-
         // ---------- END LOGIN / APP WRAPPER ----------
 
         // ---------- BoulderingTracker (modificeret til at tage `user` prop) ----------
@@ -785,7 +784,6 @@
                                     </p>
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
-                                    <div className="text-sm text-slate-300">Logget ind som</div>
                                     <div className="text-sm font-medium">{user.email}</div>
                                     <button
                                         onClick={async () => { await supabase.auth.signOut(); }}
@@ -955,7 +953,6 @@
                                 <p className="text-slate-400">Alle dine klatring sessioner</p>
                             </div>
                             <div className="flex flex-col items-end">
-                                <div className="text-sm text-slate-300">Logget ind som</div>
                                 <div className="text-sm font-medium">{user.email}</div>
                                 <button
                                     onClick={async () => { await supabase.auth.signOut(); }}
@@ -1136,30 +1133,35 @@
                                     </div>
 
                                     {/* NEW: Wall Height for route, moved here */}
-                                    <div className="pt-2">
+                                    <div className="relative inline-block text-left mb-3">
+                                        <button
+                                            onClick={() => setShowHeightSelector(!showHeightSelector)}
+                                            className="bg-slate-700/60 hover:bg-slate-600 text-slate-300 text-sm font-medium px-3 py-1 rounded-full border border-slate-600 transition-all"
+                                        >
+                                            🧱 {newRoute.wallHeight}m
+                                        </button>
 
-                                        {showHeightSelector ? (
-                                            <select
-                                                value={newRoute.wallHeight}
-                                                onChange={(e) => {
-                                                    setNewRoute({ ...newRoute, wallHeight: e.target.value });
-                                                    setShowHeightSelector(false); // Luk dropdown når valgt
-                                                }}
-                                                className="bg-slate-800 text-slate-300 rounded-md p-2 text-sm border border-slate-700 focus:border-slate-500 focus:outline-none"
-                                            >
-                                                <option value="5">5 meter</option>
-                                                <option value="7">7 meter</option>
-                                                <option value="10">10 meter</option>
-                                            </select>
-                                        ) : (
-                                            <button
-                                                onClick={() => setShowHeightSelector(true)}
-                                                className="text-slate-400 text-sm hover:text-slate-200 underline"
-                                            >
-                                                Ændr væghøjde (nu: {newRoute.wallHeight}m)
-                                            </button>
+                                        {showHeightSelector && (
+                                            <div className="absolute mt-2 bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-1 z-10 w-24">
+                                                {['5', '7', '10'].map((height) => (
+                                                    <button
+                                                        key={height}
+                                                        onClick={() => {
+                                                            setNewRoute({ ...newRoute, wallHeight: height });
+                                                            setShowHeightSelector(false);
+                                                        }}
+                                                        className={`block w-full text-left px-3 py-1.5 rounded-md text-sm ${newRoute.wallHeight === height
+                                                            ? 'bg-blue-600 text-white'
+                                                            : 'text-slate-300 hover:bg-slate-700'
+                                                            }`}
+                                                    >
+                                                        {height} m
+                                                    </button>
+                                                ))}
+                                            </div>
                                         )}
                                     </div>
+
 
                                     {/* END NEW */}
 
@@ -1438,31 +1440,59 @@
                                                         </div>
 
                                                         {/* NEW: Wall Height for route, moved here */}
-                                                        <div className="pt-2"> {/* Added padding top for spacing */}
-                                                            <label className="block text-sm text-slate-400 mb-2">Væghøjde for nye ruter</label>
-                                                            <select
-                                                                value={newRoute.wallHeight}
-                                                                onChange={(e) => setNewRoute({ ...newRoute, wallHeight: e.target.value })}
-                                                                className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                                        <div className="relative inline-block text-left mb-3">
+                                                            <button
+                                                                onClick={() => setShowHeightSelector(!showHeightSelector)}
+                                                                className="bg-slate-700/60 hover:bg-slate-600 text-slate-300 text-sm font-medium px-3 py-1 rounded-full border border-slate-600 transition-all"
                                                             >
-                                                                <option value="5">5 meter</option>
-                                                                <option value="7">7 meter</option>
-                                                                <option value="10">10 meter</option>
-                                                            </select>
+                                                                🧱 {newRoute.wallHeight}m
+                                                            </button>
+
+                                                            {showHeightSelector && (
+                                                                <div className="absolute mt-2 bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-1 z-10 w-24">
+                                                                    {['5', '7', '10'].map((height) => (
+                                                                        <button
+                                                                            key={height}
+                                                                            onClick={() => {
+                                                                                setNewRoute({ ...newRoute, wallHeight: height });
+                                                                                setShowHeightSelector(false);
+                                                                            }}
+                                                                            className={`block w-full text-left px-3 py-1.5 rounded-md text-sm ${newRoute.wallHeight === height
+                                                                                    ? 'bg-blue-600 text-white'
+                                                                                    : 'text-slate-300 hover:bg-slate-700'
+                                                                                }`}
+                                                                        >
+                                                                            {height} m
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                         </div>
+
                                                         {/* END NEW */}
 
                                                         <div>
                                                             <label className="block text-sm text-slate-400 mb-2">Ruter</label>
                                                             <div className="space-y-2 mb-2">
-                                                                <select
-                                                                    value={newRoute.color}
-                                                                    onChange={(e) => setNewRoute({ ...newRoute, color: e.target.value })}
-                                                                    className="w-full bg-slate-700 rounded-lg p-3 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                                                                >
-                                                                    <option value="">Vælg farve</option>
-                                                                    {colors.map(c => <option key={c} value={c}>{c}</option>)}
-                                                                </select>
+                                                                <div className="grid grid-cols-3 gap-2 mb-3">
+                                                                    {colors.map(c => (
+                                                                        <button
+                                                                            key={c}
+                                                                            onClick={() => setNewRoute({ ...newRoute, color: c })}
+                                                                            className={`p-3 rounded-lg font-medium text-sm transition-all border-2 ${newRoute.color === c
+                                                                                ? 'border-white shadow-lg scale-105'
+                                                                                : 'border-transparent opacity-80 hover:opacity-100'
+                                                                                }`}
+                                                                            style={{
+                                                                                background: getGradient(c),
+                                                                                color: c === 'Hvid' ? '#232323' : '#fff'
+                                                                            }}
+                                                                        >
+                                                                            {c}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+
 
                                                                 <div className="flex gap-2">
                                                                     <input
